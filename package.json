@@ -1,0 +1,17 @@
+{
+  "name": "biblioteca-digital",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aplicación de escritorio offline-first para contenido educativo",
+  "scripts": {
+    "install:all": "echo 'Instalar dependencias de client y server'",
+    "dev": "echo 'Ejecutar cliente y servidor en desarrollo'",
+    "build": "echo 'Construir cliente y servidor'",
+    "test": "echo 'Ejecutar pruebas'"
+  },
+  "workspaces": [
+    "client/angular",
+    "client/electron",
+    "server"
+  ]
+}

@@ -1,0 +1,45 @@
+# Dependencias
+node_modules/
+package-lock.json
+
+# Builds
+dist/
+build/
+out/
+release/
+*.log
+
+# Angular
+.angular/
+coverage/
+
+# Electron
+.electron/
+
+# Entorno
+.env
+.env.local
+*.local
+
+# Bases de datos locales (no subir datos reales)
+*.sqlite
+*.sqlite3
+*.db
+database/local-sqlite/*.sqlite
+
+# Archivos de contenido real (solo estructura de referencia)
+storage/documents/*
+storage/videos/*
+storage/images/*
+!storage/documents/.gitkeep
+!storage/videos/.gitkeep
+!storage/images/.gitkeep
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
