@@ -1,0 +1,53 @@
+<div class="page-title">
+  <div class="emblem" aria-hidden="true">🏫</div>
+  <div>
+    <h1>Acerca de la institución</h1>
+    <p>Identidad y datos generales de nuestra comunidad educativa.</p>
+  </div>
+</div>
+
+<div class="school-intro">
+  <div>
+    <span class="pill">Institución educativa secundaria</span>
+    <h2>Micaela Bastidas Puyucahua</h2>
+    <p class="muted">
+      Institución educativa pública ubicada en el distrito de {{ institution.district }}.
+    </p>
+    <p>
+      La institución fue creada el {{ institution.createdOn }}, mediante
+      {{ institution.creationResolution }}, según la referencia histórica recogida en su
+      Reglamento Interno 2024.
+    </p>
+    <div class="school-facts">
+      <div class="school-fact"><b>Nivel educativo</b><span>{{ institution.level }}</span></div>
+      <div class="school-fact"><b>Código modular</b><span>{{ institution.modularCode }}</span></div>
+      <div class="school-fact"><b>Código de local</b><span>{{ institution.localCode }}</span></div>
+      <div class="school-fact"><b>Ubicación</b><span>{{ institution.address }}</span></div>
+      <div class="school-fact"><b>UGEL</b><span>{{ institution.ugel }}</span></div>
+      <div class="school-fact"><b>Gestión</b><span>{{ institution.management }}</span></div>
+    </div>
+  </div>
+  <img [src]="institution.gate" alt="Ingreso principal de la I.E. Micaela Bastidas Puyucahua" />
+</div>
+
+<div class="grid-two">
+  <section class="panel">
+    <h2>Misión institucional</h2>
+    <p class="muted">
+      El texto oficial está pendiente de incorporar desde el Proyecto Educativo Institucional
+      (PEI) vigente.
+    </p>
+  </section>
+  <section class="panel">
+    <h2>Visión institucional</h2>
+    <p class="muted">
+      El texto oficial está pendiente de incorporar desde el Proyecto Educativo Institucional
+      (PEI) vigente.
+    </p>
+  </section>
+</div>
+
+<p class="identity-note">
+  <b>Nota:</b> Los datos de identificación corresponden a la institución de nivel secundaria. La
+  misión y la visión no se han inventado; se completarán cuando se disponga del PEI oficial.
+</p>

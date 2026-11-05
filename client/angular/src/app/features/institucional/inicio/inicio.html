@@ -1,0 +1,44 @@
+<section class="hero2" [style.--gate]="'url(' + institution.gate + ')'">
+  <div class="hero-in">
+    <span class="pill">Tamburco · Abancay · Apurímac</span>
+    <h1>Biblioteca<br />Digital</h1>
+    <div class="badge">{{ institution.shortName }}</div>
+    <p>Recursos educativos al alcance de toda nuestra comunidad educativa.</p>
+
+    <form class="homesearch" (submit)="$event.preventDefault()">
+      <input
+        class="field"
+        type="search"
+        name="q"
+        aria-label="Buscar recursos"
+        placeholder="Buscar por nombre, área, grado o tipo..."
+        disabled
+      />
+      <button class="btn primary" type="submit" disabled>Buscar</button>
+    </form>
+    <p class="hint">La búsqueda del catálogo se habilitará en la etapa 2.</p>
+
+    <div class="quick">
+      <a class="quick-btn" routerLink="/acerca">
+        <span>🏫</span>
+        Nuestra institución
+      </a>
+      <span class="quick-btn disabled">
+        <span>📑</span>
+        Libros y documentos
+      </span>
+      <span class="quick-btn disabled">
+        <span>▶️</span>
+        Videos educativos
+      </span>
+      <span class="quick-btn disabled">
+        <span>📝</span>
+        Actividades
+      </span>
+      <span class="quick-btn disabled">
+        <span>👥</span>
+        Comunidad
+      </span>
+    </div>
+  </div>
+</section>

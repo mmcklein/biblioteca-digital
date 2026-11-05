@@ -1,0 +1,58 @@
+<div class="app">
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <div class="brand">
+      <img class="brand-logo" [src]="institution.shield" [alt]="'Escudo de ' + institution.shortName" />
+      <h2>Biblioteca<br />Digital</h2>
+      <small>{{ institution.shortName }}</small>
+    </div>
+
+    <nav class="nav" aria-label="Secciones de la biblioteca">
+      @for (item of nav; track item.path) {
+        @if (item.ready) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            (click)="closeSidebar()"
+          >
+            <span aria-hidden="true">{{ item.icon }}</span>
+            {{ item.label }}
+          </a>
+        } @else {
+          <span class="nav-soon" [title]="'Se construirá en una etapa posterior'">
+            <span aria-hidden="true">{{ item.icon }}</span>
+            {{ item.label }}
+            <em>Pronto</em>
+          </span>
+        }
+      }
+    </nav>
+
+    <p class="side-bottom">«{{ institution.motto }}»</p>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-id">
+        <button
+          class="btn mobilebar"
+          type="button"
+          (click)="sidebarOpen = !sidebarOpen"
+          aria-label="Abrir menú"
+        >
+          ☰
+        </button>
+        <div class="inst">
+          <b>{{ institution.shortName }}</b>
+          <i>{{ institution.location }}</i>
+        </div>
+      </div>
+      <span class="userchip">Etapa 1 · identidad institucional</span>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+
+    <footer class="footer">✦ {{ institution.footer }} ✦</footer>
+  </div>
+</div>
