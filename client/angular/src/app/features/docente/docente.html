@@ -1,0 +1,578 @@
+<div class="page-title">
+  <div class="emblem" aria-hidden="true">🧑‍🏫</div>
+  <div>
+    <h1>Panel del Docente</h1>
+    <p>
+      {{ currentTeacher()?.name }} ·
+      @if (teacherArea()) {
+        <span>Área de {{ teacherArea()?.name }} ({{ teacherArea()?.icon }})</span>
+      } @else {
+        <span>Cuerpo docente institucional</span>
+      }
+    </p>
+  </div>
+</div>
+
+@if (alertMessage()) {
+  <div class="toast-alert" role="alert">
+    <span>✓</span> {{ alertMessage() }}
+  </div>
+}
+
+<nav class="docente-tabs" aria-label="Secciones de trabajo docente">
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="currentTab() === 'materiales'"
+    (click)="setTab('materiales')"
+  >
+    📑 Mis Materiales ({{ myMaterials().length }})
+  </button>
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="currentTab() === 'actividades'"
+    (click)="setTab('actividades')"
+  >
+    📝 Mis Actividades ({{ myActivities().length }})
+  </button>
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="currentTab() === 'catalogo'"
+    (click)="setTab('catalogo')"
+  >
+    🔍 Explorar Catálogo General
+  </button>
+</nav>
+
+<!-- PESTAÑA 1: MIS MATERIALES -->
+@if (currentTab() === 'materiales') {
+  <div class="tab-content">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="field search"
+        placeholder="Buscar en mis materiales..."
+        [value]="materialSearch()"
+        (input)="materialSearch.set($any($event.target).value)"
+      />
+
+      <select
+        class="field"
+        [value]="materialGradeFilter()"
+        (change)="materialGradeFilter.set($any($event.target).value)"
+      >
+        <option value="">Todos los grados</option>
+        @for (grade of grades; track grade) {
+          <option [value]="grade">{{ gradeLabel(grade) }}</option>
+        }
+      </select>
+
+      <select
+        class="field"
+        [value]="materialStatusFilter()"
+        (change)="materialStatusFilter.set($any($event.target).value)"
+      >
+        <option value="">Todos los estados</option>
+        <option value="publicado">Publicados</option>
+        <option value="retirado">Retirados</option>
+      </select>
+
+      <button class="btn primary" type="button" (click)="openUploadModal()">+ Subir Nuevo Material</button>
+    </div>
+
+    @if (myMaterials().length === 0) {
+      <div class="empty-box panel">
+        <span class="empty-icon">📂</span>
+        <h3>No tienes materiales en esta lista</h3>
+        <p>Puedes subir documentos PDF, Word, presentaciones o videos educativos para tus estudiantes.</p>
+        <button class="btn primary" type="button" (click)="openUploadModal()">Subir mi primer material</button>
+      </div>
+    } @else {
+      <div class="table-container panel">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Título y Archivo</th>
+              <th>Tipo y Formato</th>
+              <th>Grado</th>
+              <th>Estado</th>
+              <th>Acciones de Docente</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (res of myMaterials(); track res.id) {
+              <tr>
+                <td>
+                  <b>{{ res.title }}</b><br />
+                  <small class="muted">
+                    📄 {{ res.fileName || (res.title + '.' + res.format.toLowerCase()) }} ·
+                    {{ res.createdAt || 'Registrado' }}
+                  </small>
+                </td>
+                <td>
+                  <span class="pill">{{ res.type }}</span>
+                  <span class="pill format-pill">{{ res.format }}</span>
+                  @if (res.duration) {
+                    <small class="duration-tag">⏱ {{ res.duration }}</small>
+                  }
+                </td>
+                <td>
+                  <span class="pill">{{ gradeLabel(res.grade) }}</span>
+                </td>
+                <td>
+                  <span class="status-badge" [class.active]="res.status === 'publicado'">
+                    {{ res.status === 'publicado' ? 'Publicado' : 'Retirado' }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button
+                    class="btn tiny"
+                    type="button"
+                    (click)="toggleMyMaterialStatus(res)"
+                  >
+                    {{ res.status === 'publicado' ? 'Retirar' : 'Publicar' }}
+                  </button>
+                  <button class="btn tiny" type="button" (click)="editMyMaterial(res)">Editar</button>
+                  <button class="btn tiny" type="button" (click)="openReplaceFileModal(res)">Reemplazar archivo</button>
+                  <button class="btn tiny danger" type="button" (click)="deleteMyMaterial(res)">Eliminar</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+
+<!-- PESTAÑA 2: MIS ACTIVIDADES -->
+@if (currentTab() === 'actividades') {
+  <div class="tab-content">
+    <div class="toolbar">
+      <h3>Actividades Pedagógicas Creadas por Mí</h3>
+      <button class="btn primary" type="button" (click)="openActivityModal()">+ Crear Nueva Actividad</button>
+    </div>
+
+    @if (myActivities().length === 0) {
+      <div class="empty-box panel">
+        <span class="empty-icon">📝</span>
+        <h3>Aún no has creado actividades</h3>
+        <p>Diseña guías de trabajo y asígnalas a los grados correspondientes de secundaria.</p>
+        <button class="btn primary" type="button" (click)="openActivityModal()">Crear mi primera actividad</button>
+      </div>
+    } @else {
+      <div class="table-container panel">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Actividad Pedagógica</th>
+              <th>Grado Sugerido</th>
+              <th>Dificultad</th>
+              <th>Asignación Escolar</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (act of myActivities(); track act.id) {
+              <tr>
+                <td>
+                  <b>{{ act.title }}</b><br />
+                  <small class="muted">{{ act.steps?.length ?? 0 }} pasos guiados · ⏱ {{ act.duration }}</small>
+                </td>
+                <td>
+                  <span class="pill">{{ gradeLabel(act.grade) }}</span>
+                </td>
+                <td>
+                  <span class="pill">{{ act.difficulty ?? 'Intermedio' }}</span>
+                </td>
+                <td>
+                  @if (act.assignedGrades && act.assignedGrades.length > 0) {
+                    <span class="assigned-tag">
+                      🎯 Asignada a: {{ act.assignedGrades.join('., ') }}º sec
+                    </span>
+                  } @else {
+                    <span class="muted">Sin asignar</span>
+                  }
+                </td>
+                <td>
+                  <span class="status-badge" [class.active]="act.status === 'publicado'">
+                    {{ act.status === 'publicado' ? 'Publicada' : 'Retirada' }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button class="btn tiny" type="button" (click)="openAssignModal(act)">
+                    🎯 Asignar a estudiantes
+                  </button>
+                  <button
+                    class="btn tiny"
+                    type="button"
+                    (click)="toggleMyMaterialStatus(act)"
+                  >
+                    {{ act.status === 'publicado' ? 'Retirar' : 'Publicar' }}
+                  </button>
+                  <button class="btn tiny" type="button" (click)="editMyActivity(act)">Editar</button>
+                  <button class="btn tiny danger" type="button" (click)="deleteMyMaterial(act)">Eliminar</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+
+<!-- PESTAÑA 3: EXPLORAR CATÁLOGO GENERAL -->
+@if (currentTab() === 'catalogo') {
+  <div class="tab-content">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="field search"
+        placeholder="Buscar material en la biblioteca escolar..."
+        [value]="catalogSearch()"
+        (input)="catalogSearch.set($any($event.target).value)"
+      />
+
+      <select
+        class="field"
+        [value]="catalogAreaFilter()"
+        (change)="catalogAreaFilter.set($any($event.target).value)"
+      >
+        <option value="">Todas las áreas</option>
+        @for (area of areas; track area.id) {
+          <option [value]="area.id">{{ area.name }}</option>
+        }
+      </select>
+      <span class="muted">{{ availableCatalog().length }} recursos disponibles</span>
+    </div>
+
+    <div class="table-container panel">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Recurso Disponible</th>
+            <th>Área Curricular</th>
+            <th>Grado</th>
+            <th>Docente / Autor</th>
+            <th>Tipo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of availableCatalog(); track item.id) {
+            <tr>
+              <td>
+                <b>{{ item.title }}</b><br />
+                <small class="muted">{{ item.description }}</small>
+              </td>
+              <td>
+                <span class="pill">{{ areaById(item.areaId)?.name }}</span>
+              </td>
+              <td>
+                <span class="pill">{{ gradeLabel(item.grade) }}</span>
+              </td>
+              <td>
+                <small>{{ item.author }}</small>
+              </td>
+              <td>
+                <span class="pill">{{ item.type }}</span>
+                <span class="pill format-pill">{{ item.format }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- MODAL: SUBIR / EDITAR MATERIAL PROPIO -->
+@if (showUploadModal()) {
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && showUploadModal.set(false)">
+    <div class="modal-dialog panel">
+      <header class="modal-header">
+        <h3>{{ editingResource() ? 'Modificar Mi Material' : 'Subir Nuevo Material Educativo' }}</h3>
+        <button class="btn-close" type="button" (click)="showUploadModal.set(false)">✕</button>
+      </header>
+
+      <form (submit)="$event.preventDefault(); saveMyMaterial()" class="modal-form">
+        <label>
+          Título del material:
+          <input
+            type="text"
+            class="field"
+            [(ngModel)]="resourceForm.title"
+            name="title"
+            placeholder="Ejemplo: Guía de ecuaciones lineales"
+            required
+          />
+        </label>
+
+        <div class="form-row">
+          <label>
+            Área Curricular:
+            <select class="field" [(ngModel)]="resourceForm.areaId" name="areaId">
+              @for (area of areas; track area.id) {
+                <option [value]="area.id">{{ area.name }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Grado de secundaria:
+            <select class="field" [(ngModel)]="resourceForm.grade" name="grade">
+              @for (grade of grades; track grade) {
+                <option [value]="grade">{{ gradeLabel(grade) }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label>
+            Tipo de material:
+            <select class="field" [(ngModel)]="resourceForm.type" name="type">
+              <option value="Libro">Libro</option>
+              <option value="Guía">Guía pedagógica</option>
+              <option value="Ficha">Ficha de trabajo</option>
+              <option value="Investigación">Investigación</option>
+              <option value="Presentación">Presentación</option>
+              <option value="Video">Video educativo</option>
+            </select>
+          </label>
+
+          <label>
+            Formato de archivo:
+            <select class="field" [(ngModel)]="resourceForm.format" name="format">
+              <option value="PDF">PDF</option>
+              <option value="DOCX">DOCX (Word)</option>
+              <option value="PPT">PPT (PowerPoint)</option>
+              <option value="ePub">ePub</option>
+              <option value="MP4">MP4 (Video)</option>
+            </select>
+          </label>
+        </div>
+
+        @if (resourceForm.type === 'Video') {
+          <label>
+            Duración aproximada del video:
+            <input
+              type="text"
+              class="field"
+              [(ngModel)]="resourceForm.duration"
+              name="duration"
+              placeholder="Ejemplo: 12:30"
+            />
+          </label>
+        }
+
+        <label>
+          Nombre o archivo local asignado:
+          <input
+            type="text"
+            class="field"
+            [(ngModel)]="resourceForm.fileName"
+            name="fileName"
+            placeholder="archivo_documento.pdf"
+          />
+        </label>
+
+        <label>
+          Descripción pedagógica:
+          <textarea
+            class="field"
+            [(ngModel)]="resourceForm.description"
+            name="description"
+            rows="3"
+            placeholder="Explica brevemente los conceptos y objetivos del material..."
+            required
+          ></textarea>
+        </label>
+
+        <label>
+          Estado de publicación:
+          <select class="field" [(ngModel)]="resourceForm.status" name="status">
+            <option value="publicado">Publicado (Visible para estudiantes y familias)</option>
+            <option value="retirado">Retirado (Solo visible en mi panel)</option>
+          </select>
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="showUploadModal.set(false)">Cancelar</button>
+          <button type="submit" class="btn primary">
+            {{ editingResource() ? 'Guardar Cambios' : 'Subir Material' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL: REEMPLAZAR ARCHIVO -->
+@if (showReplaceFileModal()) {
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && showReplaceFileModal.set(false)">
+    <div class="modal-dialog panel">
+      <header class="modal-header">
+        <h3>Reemplazar Archivo</h3>
+        <button class="btn-close" type="button" (click)="showReplaceFileModal.set(false)">✕</button>
+      </header>
+
+      <div class="modal-form">
+        <p>
+          Vas a reemplazar el archivo de: <b>{{ replacingResource()?.title }}</b>.
+        </p>
+
+        <label>
+          Nuevo nombre de archivo:
+          <input
+            type="text"
+            class="field"
+            [(ngModel)]="newFileName"
+            placeholder="documento_actualizado_v2.pdf"
+          />
+        </label>
+
+        <label>
+          Formato:
+          <select class="field" [(ngModel)]="newFileFormat">
+            <option value="PDF">PDF</option>
+            <option value="DOCX">DOCX (Word)</option>
+            <option value="PPT">PPT (PowerPoint)</option>
+            <option value="ePub">ePub</option>
+            <option value="MP4">MP4 (Video)</option>
+          </select>
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="showReplaceFileModal.set(false)">Cancelar</button>
+          <button type="button" class="btn primary" (click)="confirmReplaceFile()">Confirmar Reemplazo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: CREAR / EDITAR ACTIVIDAD -->
+@if (showActivityModal()) {
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && showActivityModal.set(false)">
+    <div class="modal-dialog panel">
+      <header class="modal-header">
+        <h3>{{ editingActivity() ? 'Modificar Actividad' : 'Diseñar Nueva Actividad Pedagógica' }}</h3>
+        <button class="btn-close" type="button" (click)="showActivityModal.set(false)">✕</button>
+      </header>
+
+      <form (submit)="$event.preventDefault(); saveMyActivity()" class="modal-form">
+        <label>
+          Título de la actividad:
+          <input
+            type="text"
+            class="field"
+            [(ngModel)]="activityForm.title"
+            name="title"
+            placeholder="Ejemplo: Taller práctico de proporcionalidad"
+            required
+          />
+        </label>
+
+        <div class="form-row">
+          <label>
+            Grado principal:
+            <select class="field" [(ngModel)]="activityForm.grade" name="grade">
+              @for (grade of grades; track grade) {
+                <option [value]="grade">{{ gradeLabel(grade) }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Dificultad:
+            <select class="field" [(ngModel)]="activityForm.difficulty" name="difficulty">
+              <option value="Básico">Básico</option>
+              <option value="Intermedio">Intermedio</option>
+              <option value="Avanzado">Avanzado</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Duración estimada:
+          <input
+            type="text"
+            class="field"
+            [(ngModel)]="activityForm.duration"
+            name="duration"
+            placeholder="Ejemplo: 45 min"
+          />
+        </label>
+
+        <label>
+          Propósito / Instrucciones generales:
+          <textarea
+            class="field"
+            [(ngModel)]="activityForm.description"
+            name="description"
+            rows="2"
+            required
+          ></textarea>
+        </label>
+
+        <label>
+          Pasos de trabajo guiado (uno por línea):
+          <textarea
+            class="field"
+            [(ngModel)]="activityForm.stepsInput"
+            name="stepsInput"
+            rows="4"
+            placeholder="Paso 1: Lectura inicial&#10;Paso 2: Resolver preguntas&#10;Paso 3: Redactar conclusiones"
+          ></textarea>
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="showActivityModal.set(false)">Cancelar</button>
+          <button type="submit" class="btn primary">Guardar Actividad</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL: ASIGNAR ACTIVIDAD A ESTUDIANTES -->
+@if (showAssignModal()) {
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && showAssignModal.set(false)">
+    <div class="modal-dialog panel">
+      <header class="modal-header">
+        <h3>Asignar Actividad a Estudiantes</h3>
+        <button class="btn-close" type="button" (click)="showAssignModal.set(false)">✕</button>
+      </header>
+
+      <div class="modal-form">
+        <p>
+          Selecciona a qué grados de secundaria estará dirigida la actividad:
+          <br /><b>«{{ assigningActivity()?.title }}»</b>
+        </p>
+
+        <div class="grades-checkboxes">
+          @for (grade of grades; track grade) {
+            <label class="check-label">
+              <input
+                type="checkbox"
+                [checked]="isGradeAssigned(grade)"
+                (change)="toggleAssignGrade(grade)"
+              />
+              <span>{{ gradeLabel(grade) }}</span>
+            </label>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="showAssignModal.set(false)">Cancelar</button>
+          <button type="button" class="btn primary" (click)="confirmAssign()">Guardar Asignación</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+

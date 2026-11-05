@@ -15,11 +15,14 @@ export interface LibraryResource {
   featured: boolean;
   status: ResourceStatus;
   createdBy?: string;
+  creatorUsername?: string;
   createdAt?: string;
   duration?: string;
   difficulty?: DifficultyLevel;
   topics?: string[];
   steps?: string[];
+  assignedGrades?: number[];
+  fileName?: string;
 }
 
 interface RawSeed {
@@ -355,24 +358,39 @@ const SEEDS: RawSeed[] = [
   },
 ];
 
-export const DEMO_RESOURCES: LibraryResource[] = SEEDS.map((seed, index) => ({
-  id: index + 1,
-  title: seed.title,
-  areaId: seed.areaId,
-  grade: seed.grade,
-  format: seed.format,
-  type: seed.type,
-  description: seed.description,
-  author: 'Equipo pedagógico I.E. Micaela Bastidas',
-  featured: index < 9,
-  status: 'publicado',
-  createdBy: 'Dirección Pedagógica',
-  createdAt: '2026-03-01',
-  duration: seed.duration,
-  difficulty: seed.difficulty,
-  topics: seed.topics,
-  steps: seed.steps,
-}));
+export const DEMO_RESOURCES: LibraryResource[] = SEEDS.map((seed, index) => {
+  const isCarlos = seed.areaId === 0;
+  const isMaria = seed.areaId === 1;
+
+  const creatorUsername = isCarlos ? 'prof.carlos' : isMaria ? 'prof.maria' : 'admin';
+  const author = isCarlos
+    ? 'Prof. Carlos Hurtado Valer'
+    : isMaria
+      ? 'Prof. María Quispe Rojas'
+      : 'Equipo pedagógico I.E. Micaela Bastidas';
+
+  return {
+    id: index + 1,
+    title: seed.title,
+    areaId: seed.areaId,
+    grade: seed.grade,
+    format: seed.format,
+    type: seed.type,
+    description: seed.description,
+    author,
+    featured: index < 9,
+    status: 'publicado',
+    createdBy: author,
+    creatorUsername,
+    createdAt: '2026-03-01',
+    duration: seed.duration,
+    difficulty: seed.difficulty,
+    topics: seed.topics,
+    steps: seed.steps,
+    assignedGrades: seed.type === 'Actividad' ? [seed.grade] : undefined,
+    fileName: `${seed.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.${seed.format.toLowerCase()}`,
+  };
+});
 
 export function isDocument(resource: LibraryResource): boolean {
   return resource.type !== 'Video' && resource.type !== 'Actividad';

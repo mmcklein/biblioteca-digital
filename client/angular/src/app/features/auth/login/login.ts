@@ -44,6 +44,8 @@ export class Login {
   private navigatePostLogin(): void {
     if (this.auth.isAdmin()) {
       void this.router.navigate(['/admin']);
+    } else if (this.auth.isDocente()) {
+      void this.router.navigate(['/docente']);
     } else {
       void this.router.navigate(['/inicio']);
     }
