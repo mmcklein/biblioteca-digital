@@ -37,4 +37,4 @@ Lograr que una computadora pueda:
 2. Iniciar sesión
 3. Consultar información de prueba
 
-Después: sincronización entre computadoras y funcionamiento sin Internet.
+Después: sincronización entre computadoras y funcionamiento sin Internet  oooo.
