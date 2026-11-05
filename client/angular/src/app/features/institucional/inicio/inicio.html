@@ -5,40 +5,55 @@
     <div class="badge">{{ institution.shortName }}</div>
     <p>Recursos educativos al alcance de toda nuestra comunidad educativa.</p>
 
-    <form class="homesearch" (submit)="$event.preventDefault()">
+    <form class="homesearch" (submit)="$event.preventDefault(); search()">
       <input
         class="field"
         type="search"
         name="q"
+        [(ngModel)]="query"
         aria-label="Buscar recursos"
         placeholder="Buscar por nombre, área, grado o tipo..."
-        disabled
       />
-      <button class="btn primary" type="submit" disabled>Buscar</button>
+      <button class="btn primary" type="submit">Buscar</button>
     </form>
-    <p class="hint">La búsqueda del catálogo se habilitará en la etapa 2.</p>
 
     <div class="quick">
       <a class="quick-btn" routerLink="/acerca">
         <span>🏫</span>
         Nuestra institución
       </a>
-      <span class="quick-btn disabled">
+      <a class="quick-btn" routerLink="/libros">
         <span>📑</span>
         Libros y documentos
-      </span>
-      <span class="quick-btn disabled">
+      </a>
+      <a class="quick-btn" routerLink="/areas">
+        <span>📚</span>
+        Áreas académicas
+      </a>
+      <a class="quick-btn" routerLink="/videos">
         <span>▶️</span>
         Videos educativos
-      </span>
-      <span class="quick-btn disabled">
+      </a>
+      <a class="quick-btn" routerLink="/actividades">
         <span>📝</span>
         Actividades
-      </span>
-      <span class="quick-btn disabled">
-        <span>👥</span>
-        Comunidad
-      </span>
+      </a>
     </div>
   </div>
 </section>
+
+<h2 class="section-h">Recursos destacados</h2>
+<div class="grid big">
+  @for (resource of featured; track resource.id) {
+    <app-resource-card [resource]="resource" (openDetail)="selected = $event" />
+  }
+</div>
+
+<p class="notice">
+  Esta es una demostración navegable. Los documentos y videos reales se incorporarán después desde los archivos
+  autorizados por la institución.
+</p>
+
+@if (selected) {
+  <app-resource-detail [resource]="selected" (closed)="selected = null" />
+}

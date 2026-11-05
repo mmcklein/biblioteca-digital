@@ -1,0 +1,123 @@
+<div class="page-title">
+  <div class="emblem" aria-hidden="true">📝</div>
+  <div>
+    <h1>Actividades y Fichas didácticas</h1>
+    <p>Retos prácticos, talleres guiados y guías de trabajo para el aula o casa.</p>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="panel filter-panel">
+    <h3>Filtrar actividades</h3>
+
+    <label>
+      Área curricular
+      <select class="field" [value]="current().area" (change)="setFilter('area', $any($event.target).value)">
+        <option value="">Todas las áreas</option>
+        @for (area of areas; track area.id) {
+          <option [value]="area.id">{{ area.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Grado escolar
+      <select class="field" [value]="current().grade" (change)="setFilter('grade', $any($event.target).value)">
+        <option value="">Todos los grados</option>
+        @for (grade of grades; track grade) {
+          <option [value]="grade">{{ gradeLabel(grade) }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Nivel de dificultad
+      <select class="field" [value]="current().difficulty" (change)="setFilter('difficulty', $any($event.target).value)">
+        <option value="">Todos los niveles</option>
+        @for (diff of difficulties; track diff) {
+          <option [value]="diff">{{ diff }}</option>
+        }
+      </select>
+    </label>
+
+    <button class="btn" type="button" (click)="clearFilters()">Limpiar filtros</button>
+
+    <div class="tip-box">
+      <span class="tip-title">💡 Uso en el aula</span>
+      <p>Los docentes pueden imprimir las fichas o utilizarlas para dinámicas en grupos pequeños.</p>
+    </div>
+  </aside>
+
+  <div class="content-col">
+    <div class="toolbar">
+      <input
+        class="field search"
+        type="search"
+        [value]="queryDraft()"
+        (input)="queryDraft.set($any($event.target).value)"
+        (keydown.enter)="setFilter('q', queryDraft())"
+        placeholder="Buscar por tema o competencia..."
+        aria-label="Buscar actividades"
+      />
+      <button class="btn primary" type="button" (click)="setFilter('q', queryDraft())">Buscar</button>
+      <span class="muted">{{ activityList().length }} actividades disponibles</span>
+    </div>
+
+    @if (activityList().length === 0) {
+      <div class="empty-state">
+        <span class="icon">📝</span>
+        <h3>No se encontraron actividades</h3>
+        <p>Intenta con otros criterios de búsqueda o limpia los filtros.</p>
+        <button class="btn" type="button" (click)="clearFilters()">Ver todas las actividades</button>
+      </div>
+    } @else {
+      <div class="activity-grid">
+        @for (act of activityList(); track act.id) {
+          @let area = areaById(act.areaId);
+          <article class="activity-card">
+            <div class="card-header" [style.border-top-color]="area?.color ?? '#7a0c18'">
+              <div class="badge-row">
+                <span class="area-pill">{{ area?.icon }} {{ area?.name }}</span>
+                <span class="format-badge">{{ act.format }}</span>
+              </div>
+              <h3>{{ act.title }}</h3>
+            </div>
+
+            <div class="card-body">
+              <p>{{ act.description }}</p>
+
+              <div class="meta-tags">
+                <span class="pill">{{ gradeLabel(act.grade) }}</span>
+                <span class="pill diff-pill" [attr.data-diff]="act.difficulty">
+                  {{ act.difficulty ?? 'Básico' }}
+                </span>
+                <span class="pill">⏱ {{ act.duration ?? '30 min' }}</span>
+              </div>
+
+              @if (act.steps && act.steps!.length > 0) {
+                <div class="steps-preview">
+                  <span class="steps-count">📋 {{ act.steps!.length }} pasos de trabajo</span>
+                </div>
+              }
+            </div>
+
+            <div class="card-footer">
+              <button class="btn primary" type="button" (click)="openDetail(act)">
+                Ver actividad y pasos →
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<p class="demo-notice">
+  ℹ️ Fichas y guías de trabajo pedagógico adaptadas para el plan de secundaria de la I.E. Micaela Bastidas Puyucahua.
+</p>
+
+@if (selectedActivity) {
+  <app-activity-detail [resource]="selectedActivity" (closed)="selectedActivity = null" />
+}
+

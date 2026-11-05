@@ -1,0 +1,49 @@
+<div class="page-title">
+  <div class="emblem" aria-hidden="true">🎓</div>
+  <div>
+    <h1>Recursos por grado</h1>
+    <p>Explora materiales de 1.º a 5.º de secundaria.</p>
+  </div>
+</div>
+
+<div class="toolbar">
+  @for (grade of grades; track grade) {
+    <button
+      class="btn"
+      [class.primary]="selectedGrade() === grade"
+      type="button"
+      (click)="selectedGrade.set(grade)"
+    >
+      {{ grade }}.º secundaria
+    </button>
+  }
+</div>
+
+<section class="panel">
+  <h2>{{ gradeLabel(selectedGrade()) }}</h2>
+  <label>
+    Filtrar por área
+    <select class="field" [value]="selectedArea()" (change)="onAreaChange($any($event.target).value)">
+      <option [value]="-1">Todas las áreas</option>
+      @for (area of areas; track area.id) {
+        <option [value]="area.id">{{ area.name }}</option>
+      }
+    </select>
+  </label>
+</section>
+
+<h2 class="section-h">Materiales de {{ selectedGrade() }}.º grado</h2>
+
+@if (shown().length === 0) {
+  <div class="empty">No hay documentos de ejemplo para esta combinación de grado y área.</div>
+} @else {
+  <div class="grid big">
+    @for (resource of shown(); track resource.id) {
+      <app-resource-card [resource]="resource" (openDetail)="selected = $event" />
+    }
+  </div>
+}
+
+@if (selected) {
+  <app-resource-detail [resource]="selected" (closed)="selected = null" />
+}

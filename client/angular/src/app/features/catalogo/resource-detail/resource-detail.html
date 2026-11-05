@@ -1,0 +1,21 @@
+<div class="overlay" (click)="onBackdrop($event)">
+  <div class="modal" role="dialog" aria-modal="true" [attr.aria-labelledby]="'resource-' + resource().id">
+    <header>
+      <h2 [id]="'resource-' + resource().id">{{ resource().title }}</h2>
+      <button class="close" type="button" (click)="closed.emit()" aria-label="Cerrar">×</button>
+    </header>
+    <p>{{ resource().description }}</p>
+    <p>
+      <b>Autor:</b> {{ resource().author }}<br />
+      <b>Área:</b> {{ area()?.name }}<br />
+      <b>Grado:</b> {{ grade() }}<br />
+      <b>Tipo:</b> {{ resource().type }}<br />
+      <b>Formato:</b> {{ resource().format }}<br />
+      <b>Fuente:</b> Material de demostración
+    </p>
+    <p class="notice">
+      Esta ficha muestra metadatos de ejemplo. Los archivos reales (PDF, Word, ePub) se incorporarán cuando la
+      institución los autorice y estén disponibles en el almacenamiento local.
+    </p>
+  </div>
+</div>

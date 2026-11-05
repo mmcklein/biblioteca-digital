@@ -1,0 +1,32 @@
+<div class="page-title">
+  <div class="emblem" aria-hidden="true">📚</div>
+  <div>
+    <h1>Áreas académicas</h1>
+    <p>Explora materiales organizados por las 11 áreas curriculares de secundaria.</p>
+  </div>
+</div>
+
+<div class="toolbar">
+  <a class="btn" routerLink="/grados">🎓 Ver recursos por grado</a>
+</div>
+
+<div class="grid">
+  @for (area of areas; track area.id) {
+    <a class="tile" [routerLink]="['/libros']" [queryParams]="{ area: area.id }">
+      <div class="glyph">{{ area.icon }}</div>
+      <h3>{{ area.name }}</h3>
+      <p>{{ count(area.id) }} documentos de ejemplo →</p>
+    </a>
+  }
+</div>
+
+<h2 class="section-h">Recursos destacados</h2>
+<div class="grid big">
+  @for (resource of featured; track resource.id) {
+    <app-resource-card [resource]="resource" (openDetail)="selected = $event" />
+  }
+</div>
+
+@if (selected) {
+  <app-resource-detail [resource]="selected" (closed)="selected = null" />
+}

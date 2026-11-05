@@ -1,0 +1,102 @@
+<div class="page-title">
+  <div class="emblem" aria-hidden="true">▶️</div>
+  <div>
+    <h1>Videos educativos</h1>
+    <p>Material audiovisual para reforzar conceptos clave, experimentos e historia.</p>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="panel filter-panel">
+    <h3>Filtrar videos</h3>
+    <label>
+      Área curricular
+      <select class="field" [value]="current().area" (change)="setFilter('area', $any($event.target).value)">
+        <option value="">Todas las áreas</option>
+        @for (area of areas; track area.id) {
+          <option [value]="area.id">{{ area.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Grado escolar
+      <select class="field" [value]="current().grade" (change)="setFilter('grade', $any($event.target).value)">
+        <option value="">Todos los grados</option>
+        @for (grade of grades; track grade) {
+          <option [value]="grade">{{ gradeLabel(grade) }}</option>
+        }
+      </select>
+    </label>
+
+    <button class="btn" type="button" (click)="clearFilters()">Limpiar filtros</button>
+
+    <div class="offline-badge-box">
+      <span class="badge-title">📦 Almacenamiento local</span>
+      <p>Los videos se reproducen en formato offline sin requerir ancho de banda.</p>
+    </div>
+  </aside>
+
+  <div class="content-col">
+    <div class="toolbar">
+      <input
+        class="field search"
+        type="search"
+        [value]="queryDraft()"
+        (input)="queryDraft.set($any($event.target).value)"
+        (keydown.enter)="setFilter('q', queryDraft())"
+        placeholder="Buscar por título o tema..."
+        aria-label="Buscar videos"
+      />
+      <button class="btn primary" type="button" (click)="setFilter('q', queryDraft())">Buscar</button>
+      <span class="muted">{{ videoList().length }} videos disponibles</span>
+    </div>
+
+    @if (videoList().length === 0) {
+      <div class="empty-state">
+        <span class="icon">🔍</span>
+        <h3>No encontramos videos con esos filtros</h3>
+        <p>Prueba seleccionando otra área curricular o limpiando los filtros de búsqueda.</p>
+        <button class="btn" type="button" (click)="clearFilters()">Ver todos los videos</button>
+      </div>
+    } @else {
+      <div class="video-grid">
+        @for (video of videoList(); track video.id) {
+          @let area = areaById(video.areaId);
+          <article class="video-card">
+            <div class="thumbnail" [style.background-color]="area?.color ?? '#7a0c18'" (click)="openPlayer(video)">
+              <span class="area-icon" aria-hidden="true">{{ area?.icon }}</span>
+              <button class="play-overlay-btn" type="button" aria-label="Reproducir">▶</button>
+              <span class="time-tag">⏱ {{ video.duration }}</span>
+              <span class="format-tag">{{ video.format }}</span>
+            </div>
+
+            <div class="card-body">
+              <div class="pill-row">
+                <span class="pill area-tag">{{ area?.name }}</span>
+                <span class="pill">{{ gradeLabel(video.grade) }}</span>
+              </div>
+
+              <h3>{{ video.title }}</h3>
+              <p>{{ video.description }}</p>
+
+              <button class="btn primary play-btn" type="button" (click)="openPlayer(video)">
+                ▶ Reproducir video
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<p class="demo-notice">
+  ℹ️ Los videos educativos de demostración simulan la reproducción offline preparada para las aulas de la I.E.
+  Micaela Bastidas Puyucahua.
+</p>
+
+@if (selectedVideo) {
+  <app-video-player [resource]="selectedVideo" (closed)="selectedVideo = null" />
+}
+
