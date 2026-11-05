@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
 import { INSTITUTION } from '../../../core/institution';
+import { ROLE_LABELS } from '../../../core/user.model';
 
 @Component({
   selector: 'app-shell',
@@ -9,10 +11,12 @@ import { INSTITUTION } from '../../../core/institution';
   styleUrl: './app-shell.scss',
 })
 export class AppShell {
+  protected readonly auth = inject(AuthService);
   protected readonly institution = INSTITUTION;
+  protected readonly roleLabels = ROLE_LABELS;
   protected sidebarOpen = false;
 
-  protected readonly nav = [
+  private readonly baseNav = [
     { path: '/inicio', label: 'Inicio', icon: '🏠', ready: true },
     { path: '/acerca', label: 'Nuestra institución', icon: '🏫', ready: true },
     { path: '/areas', label: 'Áreas académicas', icon: '📚', ready: true },
@@ -23,6 +27,14 @@ export class AppShell {
     { path: '/comunidad', label: 'Comunidad educativa', icon: '👥', ready: false },
     { path: '/galeria', label: 'Galería institucional', icon: '🖼️', ready: false },
   ];
+
+  protected readonly nav = computed(() => {
+    const list = [...this.baseNav];
+    if (this.auth.isAdmin()) {
+      list.push({ path: '/admin', label: 'Administración', icon: '⚙️', ready: true });
+    }
+    return list;
+  });
 
   protected closeSidebar(): void {
     this.sidebarOpen = false;

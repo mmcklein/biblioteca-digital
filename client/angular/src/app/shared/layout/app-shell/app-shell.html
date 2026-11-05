@@ -7,7 +7,7 @@
     </div>
 
     <nav class="nav" aria-label="Secciones de la biblioteca">
-      @for (item of nav; track item.path) {
+      @for (item of nav(); track item.path) {
         @if (item.ready) {
           <a
             [routerLink]="item.path"
@@ -26,6 +26,26 @@
         }
       }
     </nav>
+
+    <div class="side-user">
+      @if (auth.currentUser(); as user) {
+        <div class="user-card">
+          <div class="user-avatar">
+            @switch (user.role) {
+              @case ('ADMINISTRADOR') { ⚙️ }
+              @case ('DOCENTE') { 🧑‍🏫 }
+              @case ('ESTUDIANTE') { 🎓 }
+              @case ('PADRE_FAMILIA') { 👨‍👩‍👧 }
+            }
+          </div>
+          <div class="user-details">
+            <span class="role-badge">{{ roleLabels[user.role] }}</span>
+            <b>{{ user.name }}</b>
+            <a routerLink="/login" (click)="closeSidebar()" class="switch-link">Cambiar usuario ⇄</a>
+          </div>
+        </div>
+      }
+    </div>
 
     <p class="side-bottom">«{{ institution.motto }}»</p>
   </aside>
@@ -46,7 +66,22 @@
           <i>{{ institution.location }}</i>
         </div>
       </div>
-      <span class="userchip">Etapa 3 · multimedia y actividades</span>
+
+      <div class="topbar-actions">
+        <span class="conn-pill" title="La biblioteca opera localmente sin conexión a internet">
+          🟢 Modo local activo (Offline)
+        </span>
+
+        @if (auth.currentUser(); as user) {
+          <a routerLink="/login" class="userchip-btn" title="Cambiar usuario o perfil institucional">
+            <span class="user-role-tag">{{ roleLabels[user.role] }}</span>
+            <span class="user-name">{{ user.name }}</span>
+            <span class="switch-glyph">⇄</span>
+          </a>
+        } @else {
+          <a routerLink="/login" class="btn tiny primary">Acceder</a>
+        }
+      </div>
     </header>
 
     <main class="content">

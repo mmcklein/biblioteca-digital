@@ -171,6 +171,123 @@
   flex: 1;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.conn-pill {
+  background: #e6f4ea;
+  color: #137333;
+  border: 1px solid #ceead6;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.userchip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--crema);
+  border: 1px solid #e3c98f;
+  border-radius: 24px;
+  padding: 4px 12px 4px 6px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.15s, background 0.15s;
+
+  &:hover {
+    background: #ebd8c0;
+    transform: translateY(-1px);
+  }
+
+  .user-role-tag {
+    background: var(--wine);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    letter-spacing: 0.3px;
+  }
+
+  .user-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--wine);
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .switch-glyph {
+    color: var(--wine);
+    font-size: 13px;
+    font-weight: 700;
+  }
+}
+
+.side-user {
+  padding: 12px 14px;
+  margin: 12px 10px 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .user-avatar {
+      font-size: 22px;
+      flex: none;
+    }
+
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+
+      .role-badge {
+        font-size: 10px;
+        color: #f7ca70;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      b {
+        font-size: 12px;
+        color: #fffdf8;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .switch-link {
+        font-size: 10.5px;
+        color: #ecd5ba;
+        text-decoration: underline;
+        cursor: pointer;
+        margin-top: 2px;
+
+        &:hover {
+          color: white;
+        }
+      }
+    }
+  }
+}
+
 .footer {
   background: var(--wine);
   color: #ecdcbf;

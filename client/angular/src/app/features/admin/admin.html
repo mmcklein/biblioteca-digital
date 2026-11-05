@@ -1,0 +1,616 @@
+<div class="page-title">
+  <div class="emblem" aria-hidden="true">⚙️</div>
+  <div>
+    <h1>Panel de Administración General</h1>
+    <p>Control centralizado de usuarios, roles, catálogo educativo y áreas curriculares.</p>
+  </div>
+</div>
+
+@if (alertMessage()) {
+  <div class="toast-alert" role="alert">
+    <span>✓</span> {{ alertMessage() }}
+  </div>
+}
+
+<nav class="admin-tabs" aria-label="Secciones del panel de administración">
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="currentTab() === 'resumen'"
+    (click)="setTab('resumen')"
+  >
+    📊 Resumen
+  </button>
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="currentTab() === 'usuarios'"
+    (click)="setTab('usuarios')"
+  >
+    👥 Usuarios y Roles
+  </button>
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="currentTab() === 'materiales'"
+    (click)="setTab('materiales')"
+  >
+    📚 Catálogo de Materiales
+  </button>
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="currentTab() === 'actividades'"
+    (click)="setTab('actividades')"
+  >
+    📝 Actividades
+  </button>
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="currentTab() === 'areas'"
+    (click)="setTab('areas')"
+  >
+    📐 Áreas Curriculares
+  </button>
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="currentTab() === 'auditoria'"
+    (click)="setTab('auditoria')"
+  >
+    📋 Auditoría y Respaldo
+  </button>
+</nav>
+
+<!-- PESTAÑA 1: RESUMEN GENERAL -->
+@if (currentTab() === 'resumen') {
+  <div class="tab-content">
+    <div class="stats-grid">
+      <div class="stat-card panel">
+        <span class="stat-icon">📚</span>
+        <div class="stat-data">
+          <h3>{{ catalog.allResourcesList().length }}</h3>
+          <p>Total de Recursos Registrados</p>
+          <small class="muted">{{ catalog.documents().length }} documentos · {{ catalog.videos().length }} videos</small>
+        </div>
+      </div>
+
+      <div class="stat-card panel">
+        <span class="stat-icon">📝</span>
+        <div class="stat-data">
+          <h3>{{ activityResources().length }}</h3>
+          <p>Actividades Pedagógicas</p>
+          <small class="muted">Fichas didácticas de aula</small>
+        </div>
+      </div>
+
+      <div class="stat-card panel">
+        <span class="stat-icon">👥</span>
+        <div class="stat-data">
+          <h3>{{ auth.users().length }}</h3>
+          <p>Usuarios Registrados</p>
+          <small class="muted">{{ auth.users().filter((u) => u.active).length }} cuentas activas</small>
+        </div>
+      </div>
+
+      <div class="stat-card panel">
+        <span class="stat-icon">📐</span>
+        <div class="stat-data">
+          <h3>{{ areas.length }}</h3>
+          <p>Áreas Curriculares</p>
+          <small class="muted">1.º a 5.º de secundaria</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel system-status-box">
+      <h3>Estado Operativo del Sistema</h3>
+      <div class="status-indicator-row">
+        <span class="conn-pill">🟢 Modo local activo (Offline)</span>
+        <p>
+          La biblioteca está operando desde almacenamiento local seguro. Todos los recursos, usuarios y configuraciones
+          permanecen accesibles sin necesidad de conexión a internet.
+        </p>
+      </div>
+
+      <div class="quick-admin-actions">
+        <button class="btn primary" type="button" (click)="openNewMaterialModal()">+ Registrar nuevo material</button>
+        <button class="btn" type="button" (click)="openNewUserModal()">+ Crear nuevo usuario</button>
+        <button class="btn" type="button" (click)="downloadBackup()">⬇ Descargar copia de respaldo</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- PESTAÑA 2: GESTIÓN DE USUARIOS Y ROLES -->
+@if (currentTab() === 'usuarios') {
+  <div class="tab-content">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="field search"
+        placeholder="Buscar usuario por nombre o DNI..."
+        [value]="userSearch()"
+        (input)="userSearch.set($any($event.target).value)"
+      />
+
+      <select
+        class="field"
+        [value]="userFilterRole()"
+        (change)="userFilterRole.set($any($event.target).value)"
+      >
+        <option value="">Todos los roles</option>
+        <option value="ADMINISTRADOR">Administradores</option>
+        <option value="DOCENTE">Docentes</option>
+        <option value="ESTUDIANTE">Estudiantes</option>
+        <option value="PADRE_FAMILIA">Padres de Familia</option>
+      </select>
+
+      <button class="btn primary" type="button" (click)="openNewUserModal()">+ Nuevo Usuario</button>
+    </div>
+
+    <div class="table-container panel">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre y Usuario</th>
+            <th>Rol Asignado</th>
+            <th>Asignación / Grado</th>
+            <th>Estado</th>
+            <th>Registrado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of filteredUsers(); track user.id) {
+            <tr>
+              <td>
+                <b>{{ user.name }}</b><br />
+                <small class="muted">&#64;{{ user.username }} · {{ user.email ?? 'Sin correo' }}</small>
+              </td>
+              <td>
+                <select
+                  class="field tiny-select"
+                  [value]="user.role"
+                  (change)="changeUserRole(user.id, $any($event.target).value)"
+                >
+                  <option value="ADMINISTRADOR">Administrador</option>
+                  <option value="DOCENTE">Docente</option>
+                  <option value="ESTUDIANTE">Estudiante</option>
+                  <option value="PADRE_FAMILIA">Padre de Familia</option>
+                </select>
+              </td>
+              <td>
+                @if (user.role === 'DOCENTE') {
+                  <span class="pill">{{ areaById(user.areaId ?? 0)?.name ?? 'Sin área' }}</span>
+                } @else if (user.role === 'ESTUDIANTE') {
+                  <span class="pill">{{ user.grade ? user.grade + '.º de secundaria' : 'General' }}</span>
+                } @else {
+                  <span class="muted">-</span>
+                }
+              </td>
+              <td>
+                <span class="status-badge" [class.active]="user.active">
+                  {{ user.active ? 'Activo' : 'Desactivado' }}
+                </span>
+              </td>
+              <td>
+                <small class="muted">{{ user.createdAt }}</small>
+              </td>
+              <td class="actions-cell">
+                <button class="btn tiny" type="button" (click)="editUser(user)">Editar</button>
+                <button
+                  class="btn tiny"
+                  type="button"
+                  (click)="toggleUserStatus(user)"
+                >
+                  {{ user.active ? 'Desactivar' : 'Activar' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- PESTAÑA 3: GESTIÓN DE MATERIALES -->
+@if (currentTab() === 'materiales') {
+  <div class="tab-content">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="field search"
+        placeholder="Buscar en todos los materiales..."
+        [value]="materialSearch()"
+        (input)="materialSearch.set($any($event.target).value)"
+      />
+
+      <select
+        class="field"
+        [value]="materialAreaFilter()"
+        (change)="materialAreaFilter.set($any($event.target).value)"
+      >
+        <option value="">Todas las áreas</option>
+        @for (area of areas; track area.id) {
+          <option [value]="area.id">{{ area.name }}</option>
+        }
+      </select>
+
+      <select
+        class="field"
+        [value]="materialStatusFilter()"
+        (change)="materialStatusFilter.set($any($event.target).value)"
+      >
+        <option value="">Todos los estados</option>
+        <option value="publicado">Publicados</option>
+        <option value="retirado">Retirados</option>
+      </select>
+
+      <button class="btn primary" type="button" (click)="openNewMaterialModal()">+ Nuevo Material</button>
+    </div>
+
+    <div class="table-container panel">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Título y Tipo</th>
+            <th>Área Curricular</th>
+            <th>Grado</th>
+            <th>Responsable</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (res of allMaterials(); track res.id) {
+            <tr>
+              <td>
+                <b>{{ res.title }}</b><br />
+                <small class="muted">{{ res.type }} · {{ res.format }} {{ res.duration ? '· ' + res.duration : '' }}</small>
+              </td>
+              <td>
+                <span class="pill">{{ areaById(res.areaId)?.name }}</span>
+              </td>
+              <td>
+                <span class="pill">{{ gradeLabel(res.grade) }}</span>
+              </td>
+              <td>
+                <small>{{ res.author }}</small>
+              </td>
+              <td>
+                <span class="status-badge" [class.active]="res.status === 'publicado'">
+                  {{ res.status === 'publicado' ? 'Publicado' : 'Retirado' }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <button
+                  class="btn tiny"
+                  type="button"
+                  (click)="toggleMaterialStatus(res)"
+                >
+                  {{ res.status === 'publicado' ? 'Retirar' : 'Publicar' }}
+                </button>
+                <button class="btn tiny" type="button" (click)="editMaterial(res)">Editar</button>
+                <button class="btn tiny danger" type="button" (click)="deleteMaterial(res)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- PESTAÑA 4: ACTIVIDADES -->
+@if (currentTab() === 'actividades') {
+  <div class="tab-content">
+    <div class="toolbar">
+      <h3>Actividades Pedagógicas y Fichas de Trabajo</h3>
+      <button class="btn primary" type="button" (click)="openNewMaterialModal()">+ Nueva Actividad</button>
+    </div>
+
+    <div class="table-container panel">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Actividad</th>
+            <th>Área Curricular</th>
+            <th>Grado</th>
+            <th>Dificultad</th>
+            <th>Pasos</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (act of activityResources(); track act.id) {
+            <tr>
+              <td>
+                <b>{{ act.title }}</b><br />
+                <small class="muted">{{ act.description }}</small>
+              </td>
+              <td>
+                <span class="pill">{{ areaById(act.areaId)?.name }}</span>
+              </td>
+              <td>
+                <span class="pill">{{ gradeLabel(act.grade) }}</span>
+              </td>
+              <td>
+                <span class="pill">{{ act.difficulty ?? 'Básico' }}</span>
+              </td>
+              <td>
+                <small>{{ act.steps?.length ?? 0 }} pasos guiados</small>
+              </td>
+              <td>
+                <span class="status-badge" [class.active]="act.status === 'publicado'">
+                  {{ act.status === 'publicado' ? 'Publicado' : 'Retirado' }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <button class="btn tiny" type="button" (click)="toggleMaterialStatus(act)">
+                  {{ act.status === 'publicado' ? 'Retirar' : 'Publicar' }}
+                </button>
+                <button class="btn tiny" type="button" (click)="editMaterial(act)">Editar</button>
+                <button class="btn tiny danger" type="button" (click)="deleteMaterial(act)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- PESTAÑA 5: ÁREAS CURRICULARES -->
+@if (currentTab() === 'areas') {
+  <div class="tab-content">
+    <div class="areas-grid">
+      @for (area of areas; track area.id) {
+        <div class="area-admin-card panel">
+          <div class="area-head">
+            <span class="area-icon">{{ area.icon }}</span>
+            <div class="area-title">
+              <h4>{{ area.name }}</h4>
+              <small class="muted">{{ catalog.countByArea(area.id) }} materiales activos</small>
+            </div>
+          </div>
+          <p class="area-desc">{{ area.description ?? 'Área curricular de secundaria' }}</p>
+          <button class="btn tiny" type="button" (click)="editArea(area)">Editar datos del área</button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- PESTAÑA 6: AUDITORÍA Y RESPALDO -->
+@if (currentTab() === 'auditoria') {
+  <div class="tab-content">
+    <div class="panel backup-banner">
+      <div>
+        <h3>Respaldo y Recuperación Offline</h3>
+        <p>Descarga la base de datos local en formato JSON estructurado para copias de seguridad en memorias USB.</p>
+      </div>
+      <button class="btn primary" type="button" (click)="downloadBackup()">⬇ Descargar Respaldo JSON</button>
+    </div>
+
+    <div class="table-container panel">
+      <h3>Registro Histórico de Operaciones (Auditoría)</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha / Hora</th>
+            <th>Acción</th>
+            <th>Usuario</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of catalog.auditLogs(); track log.id) {
+            <tr>
+              <td><small class="muted">{{ log.timestamp }}</small></td>
+              <td><b>{{ log.action }}</b></td>
+              <td>{{ log.user }}</td>
+              <td>{{ log.details }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- MODAL DE USUARIO (Crear / Editar) -->
+@if (showUserModal()) {
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && showUserModal.set(false)">
+    <div class="modal-dialog panel">
+      <header class="modal-header">
+        <h3>{{ editingUser() ? 'Modificar Usuario' : 'Registrar Nuevo Usuario' }}</h3>
+        <button class="btn-close" type="button" (click)="showUserModal.set(false)">✕</button>
+      </header>
+
+      <form (submit)="$event.preventDefault(); saveUser()" class="modal-form">
+        @if (!editingUser()) {
+          <label>
+            Nombre de usuario (o DNI):
+            <input type="text" class="field" [(ngModel)]="userForm.username" name="username" required />
+          </label>
+        }
+
+        <label>
+          Nombre completo:
+          <input type="text" class="field" [(ngModel)]="userForm.name" name="name" required />
+        </label>
+
+        <label>
+          Rol asignado:
+          <select class="field" [(ngModel)]="userForm.role" name="role">
+            <option value="ADMINISTRADOR">Administrador</option>
+            <option value="DOCENTE">Docente</option>
+            <option value="ESTUDIANTE">Estudiante</option>
+            <option value="PADRE_FAMILIA">Padre de Familia</option>
+          </select>
+        </label>
+
+        @if (userForm.role === 'DOCENTE') {
+          <label>
+            Área Curricular asignada:
+            <select class="field" [(ngModel)]="userForm.areaId" name="areaId">
+              @for (area of areas; track area.id) {
+                <option [value]="area.id">{{ area.name }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        @if (userForm.role === 'ESTUDIANTE') {
+          <label>
+            Grado de secundaria:
+            <select class="field" [(ngModel)]="userForm.grade" name="grade">
+              @for (grade of grades; track grade) {
+                <option [value]="grade">{{ gradeLabel(grade) }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        <label>
+          Correo electrónico (opcional):
+          <input type="email" class="field" [(ngModel)]="userForm.email" name="email" />
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="showUserModal.set(false)">Cancelar</button>
+          <button type="submit" class="btn primary">Guardar Usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL DE MATERIAL (Crear / Editar) -->
+@if (showMaterialModal()) {
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && showMaterialModal.set(false)">
+    <div class="modal-dialog panel">
+      <header class="modal-header">
+        <h3>{{ editingMaterial() ? 'Editar Recurso del Catálogo' : 'Registrar Nuevo Recurso' }}</h3>
+        <button class="btn-close" type="button" (click)="showMaterialModal.set(false)">✕</button>
+      </header>
+
+      <form (submit)="$event.preventDefault(); saveMaterial()" class="modal-form">
+        <label>
+          Título del material:
+          <input type="text" class="field" [(ngModel)]="materialForm.title" name="title" required />
+        </label>
+
+        <div class="form-row">
+          <label>
+            Área Curricular:
+            <select class="field" [(ngModel)]="materialForm.areaId" name="areaId">
+              @for (area of areas; track area.id) {
+                <option [value]="area.id">{{ area.name }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Grado:
+            <select class="field" [(ngModel)]="materialForm.grade" name="grade">
+              @for (grade of grades; track grade) {
+                <option [value]="grade">{{ gradeLabel(grade) }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label>
+            Tipo de recurso:
+            <select class="field" [(ngModel)]="materialForm.type" name="type">
+              <option value="Libro">Libro</option>
+              <option value="Guía">Guía</option>
+              <option value="Ficha">Ficha</option>
+              <option value="Investigación">Investigación</option>
+              <option value="Presentación">Presentación</option>
+              <option value="Video">Video</option>
+              <option value="Actividad">Actividad</option>
+            </select>
+          </label>
+
+          <label>
+            Formato:
+            <select class="field" [(ngModel)]="materialForm.format" name="format">
+              <option value="PDF">PDF</option>
+              <option value="DOCX">DOCX (Word)</option>
+              <option value="PPT">PPT (PowerPoint)</option>
+              <option value="ePub">ePub</option>
+              <option value="MP4">MP4 (Video)</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Descripción pedagógica:
+          <textarea class="field" [(ngModel)]="materialForm.description" name="description" rows="3" required></textarea>
+        </label>
+
+        <div class="form-row">
+          <label>
+            Autor / Docente responsable:
+            <input type="text" class="field" [(ngModel)]="materialForm.author" name="author" />
+          </label>
+
+          <label>
+            Estado inicial:
+            <select class="field" [(ngModel)]="materialForm.status" name="status">
+              <option value="publicado">Publicado (Visible)</option>
+              <option value="retirado">Retirado (Oculto)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="showMaterialModal.set(false)">Cancelar</button>
+          <button type="submit" class="btn primary">Guardar en Catálogo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL DE ÁREA CURRICULAR -->
+@if (showAreaModal()) {
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && showAreaModal.set(false)">
+    <div class="modal-dialog panel">
+      <header class="modal-header">
+        <h3>Editar Área Curricular</h3>
+        <button class="btn-close" type="button" (click)="showAreaModal.set(false)">✕</button>
+      </header>
+
+      <form (submit)="$event.preventDefault(); saveArea()" class="modal-form">
+        <label>
+          Nombre del área:
+          <input type="text" class="field" [(ngModel)]="areaForm.name" name="name" required />
+        </label>
+
+        <label>
+          Ícono representativo (Emoji):
+          <input type="text" class="field" [(ngModel)]="areaForm.icon" name="icon" required />
+        </label>
+
+        <label>
+          Descripción o enfoque pedagógico:
+          <textarea class="field" [(ngModel)]="areaForm.description" name="description" rows="3"></textarea>
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="showAreaModal.set(false)">Cancelar</button>
+          <button type="submit" class="btn primary">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+

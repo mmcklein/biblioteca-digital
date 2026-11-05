@@ -1,6 +1,7 @@
 export type ResourceKind = 'Libro' | 'Guía' | 'Ficha' | 'Investigación' | 'Presentación' | 'Actividad' | 'Video';
 export type ResourceFormat = 'PDF' | 'DOCX' | 'PPT' | 'MP4' | 'ePub';
 export type DifficultyLevel = 'Básico' | 'Intermedio' | 'Avanzado';
+export type ResourceStatus = 'publicado' | 'retirado' | 'borrador';
 
 export interface LibraryResource {
   id: number;
@@ -12,6 +13,9 @@ export interface LibraryResource {
   description: string;
   author: string;
   featured: boolean;
+  status: ResourceStatus;
+  createdBy?: string;
+  createdAt?: string;
   duration?: string;
   difficulty?: DifficultyLevel;
   topics?: string[];
@@ -361,6 +365,9 @@ export const DEMO_RESOURCES: LibraryResource[] = SEEDS.map((seed, index) => ({
   description: seed.description,
   author: 'Equipo pedagógico I.E. Micaela Bastidas',
   featured: index < 9,
+  status: 'publicado',
+  createdBy: 'Dirección Pedagógica',
+  createdAt: '2026-03-01',
   duration: seed.duration,
   difficulty: seed.difficulty,
   topics: seed.topics,
