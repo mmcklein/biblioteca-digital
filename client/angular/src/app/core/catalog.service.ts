@@ -1,4 +1,10 @@
-import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import {
+  CURRICULAR_AREAS,
+  INITIAL_CURRICULAR_AREAS,
+  type CurricularArea,
+} from './curriculum';
 import {
   DEMO_RESOURCES,
   isActivity,
@@ -6,6 +12,7 @@ import {
   isVideo,
   type DifficultyLevel,
   type LibraryResource,
+  type ResourceStatus,
 } from './resources';
 
 export interface CatalogFilters {
@@ -29,6 +36,14 @@ export interface ActivityFilters {
   difficulty: string;
 }
 
+export interface AuditLog {
+  id: number;
+  timestamp: string;
+  action: string;
+  user: string;
+  details: string;
+}
+
 export const EMPTY_FILTERS: CatalogFilters = {
   q: '',
   area: '',
@@ -50,12 +65,27 @@ export const EMPTY_ACTIVITY_FILTERS: ActivityFilters = {
   difficulty: '',
 };
 
+const RESOURCES_KEY = 'bastidas_catalog_resources';
+const AREAS_KEY = 'bastidas_curricular_areas';
+const AUDIT_KEY = 'bastidas_audit_logs';
+
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
-  readonly resources = DEMO_RESOURCES;
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
+  private readonly resourcesState = signal<LibraryResource[]>(this.loadResources());
+  private readonly areasState = signal<CurricularArea[]>(this.loadAreas());
+  private readonly auditLogsState = signal<AuditLog[]>(this.loadAuditLogs());
+
+  readonly resources = computed(() => this.resourcesState());
+  readonly areas = computed(() => this.areasState());
+  readonly auditLogs = computed(() => this.auditLogsState());
+
+  // --- Métodos de Consulta Pública (solo recursos publicados) ---
 
   documents(): LibraryResource[] {
-    return this.resources.filter(isDocument);
+    return this.resourcesState().filter((r) => isDocument(r) && r.status === 'publicado');
   }
 
   featuredDocuments(): LibraryResource[] {
@@ -87,7 +117,7 @@ export class CatalogService {
   }
 
   videos(): LibraryResource[] {
-    return this.resources.filter(isVideo);
+    return this.resourcesState().filter((r) => isVideo(r) && r.status === 'publicado');
   }
 
   filterVideos(filters: VideoFilters): LibraryResource[] {
@@ -108,7 +138,7 @@ export class CatalogService {
   }
 
   activities(): LibraryResource[] {
-    return this.resources.filter(isActivity);
+    return this.resourcesState().filter((r) => isActivity(r) && r.status === 'publicado');
   }
 
   filterActivities(filters: ActivityFilters): LibraryResource[] {
@@ -131,6 +161,197 @@ export class CatalogService {
   }
 
   byId(id: number): LibraryResource | undefined {
-    return this.resources.find((resource) => resource.id === id);
+    return this.resourcesState().find((resource) => resource.id === id);
+  }
+
+  // --- Operaciones de Administración (Control Total por Administrador) ---
+
+  allResourcesList(): LibraryResource[] {
+    return this.resourcesState();
+  }
+
+  createResource(data: Omit<LibraryResource, 'id'>, performedBy = 'Administrador'): LibraryResource {
+    const nextId = this.resourcesState().reduce((max, r) => Math.max(max, r.id), 0) + 1;
+    const now = new Date().toISOString().split('T')[0];
+
+    const newResource: LibraryResource = {
+      ...data,
+      id: nextId,
+      status: data.status ?? 'publicado',
+      createdAt: data.createdAt ?? now,
+      createdBy: data.createdBy ?? performedBy,
+    };
+
+    const updated = [newResource, ...this.resourcesState()];
+    this.saveResources(updated);
+    this.recordAudit('Creación de material', performedBy, `Registrado "${newResource.title}" (${newResource.type})`);
+    return newResource;
+  }
+
+  updateResource(id: number, changes: Partial<Omit<LibraryResource, 'id'>>, performedBy = 'Administrador'): void {
+    const updated = this.resourcesState().map((item) => {
+      if (item.id === id) {
+        return { ...item, ...changes };
+      }
+      return item;
+    });
+    this.saveResources(updated);
+    this.recordAudit('Modificación de material', performedBy, `Actualizado ID ${id}`);
+  }
+
+  setResourceStatus(id: number, status: ResourceStatus, performedBy = 'Administrador'): void {
+    const target = this.byId(id);
+    this.updateResource(id, { status }, performedBy);
+    this.recordAudit(
+      status === 'publicado' ? 'Publicación de material' : 'Retiro de material',
+      performedBy,
+      `${status === 'publicado' ? 'Publicado' : 'Retirado'} "${target?.title ?? id}"`,
+    );
+  }
+
+  deleteResource(id: number, performedBy = 'Administrador'): void {
+    const target = this.byId(id);
+    const updated = this.resourcesState().filter((r) => r.id !== id);
+    this.saveResources(updated);
+    this.recordAudit('Eliminación de material', performedBy, `Eliminado "${target?.title ?? id}"`);
+  }
+
+  // Administración de Áreas Curriculares
+  updateArea(id: number, changes: Partial<CurricularArea>, performedBy = 'Administrador'): void {
+    const updated = this.areasState().map((area) => {
+      if (area.id === id) {
+        return { ...area, ...changes };
+      }
+      return area;
+    });
+    this.saveAreas(updated);
+    this.recordAudit('Modificación de área curricular', performedBy, `Área ID ${id} modificada`);
+  }
+
+  // Registro de Auditoría / Operaciones
+  recordAudit(action: string, user: string, details: string): void {
+    const nextId = this.auditLogsState().reduce((max, log) => Math.max(max, log.id), 0) + 1;
+    const now = new Date();
+    const timeStr = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+    const newLog: AuditLog = {
+      id: nextId,
+      timestamp: timeStr,
+      action,
+      user,
+      details,
+    };
+
+    const updated = [newLog, ...this.auditLogsState()].slice(0, 50); // Guarda los últimos 50 registros
+    this.auditLogsState.set(updated);
+    if (this.isBrowser) {
+      try {
+        localStorage.setItem(AUDIT_KEY, JSON.stringify(updated));
+      } catch {
+        // Ignorar
+      }
+    }
+  }
+
+  // Exportar respaldo JSON local para el Administrador
+  exportBackupJson(): string {
+    const data = {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      institution: 'I.E. Micaela Bastidas Puyucahua',
+      resources: this.resourcesState(),
+      areas: this.areasState(),
+      auditLogs: this.auditLogsState(),
+    };
+    this.recordAudit('Copia de respaldo', 'Administrador', 'Generado archivo de respaldo offline');
+    return JSON.stringify(data, null, 2);
+  }
+
+  private saveResources(list: LibraryResource[]): void {
+    this.resourcesState.set(list);
+    if (this.isBrowser) {
+      try {
+        localStorage.setItem(RESOURCES_KEY, JSON.stringify(list));
+      } catch {
+        // Ignorar
+      }
+    }
+  }
+
+  private saveAreas(list: CurricularArea[]): void {
+    this.areasState.set(list);
+    if (this.isBrowser) {
+      try {
+        localStorage.setItem(AREAS_KEY, JSON.stringify(list));
+      } catch {
+        // Ignorar
+      }
+    }
+  }
+
+  private loadResources(): LibraryResource[] {
+    if (this.isBrowser) {
+      try {
+        const raw = localStorage.getItem(RESOURCES_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch {
+        // Ignorar
+      }
+    }
+    return DEMO_RESOURCES;
+  }
+
+  private loadAreas(): CurricularArea[] {
+    if (this.isBrowser) {
+      try {
+        const raw = localStorage.getItem(AREAS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch {
+        // Ignorar
+      }
+    }
+    return INITIAL_CURRICULAR_AREAS;
+  }
+
+  private loadAuditLogs(): AuditLog[] {
+    if (this.isBrowser) {
+      try {
+        const raw = localStorage.getItem(AUDIT_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        }
+      } catch {
+        // Ignorar
+      }
+    }
+    return [
+      {
+        id: 1,
+        timestamp: '2026-03-01 08:30',
+        action: 'Inicio de sistema',
+        user: 'Administrador',
+        details: 'Configuración inicial de la biblioteca digital offline',
+      },
+      {
+        id: 2,
+        timestamp: '2026-03-01 09:00',
+        action: 'Carga de catálogo base',
+        user: 'Administrador',
+        details: 'Se integraron 28 materiales curriculares de secundaria',
+      },
+    ];
   }
 }

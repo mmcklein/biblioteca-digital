@@ -1,0 +1,71 @@
+<div class="login-container">
+  <div class="login-card panel">
+    <div class="login-header">
+      <img [src]="institution.shield" [alt]="'Escudo de ' + institution.shortName" class="shield-logo" />
+      <h2>Acceso a la Biblioteca Digital</h2>
+      <p class="inst-subtitle">{{ institution.fullName }}</p>
+      <span class="offline-pill">🟢 Modo local activo (Offline)</span>
+    </div>
+
+    @if (errorMessage) {
+      <div class="alert-error" role="alert">
+        ⚠️ {{ errorMessage }}
+      </div>
+    }
+
+    <form class="login-form" (submit)="$event.preventDefault(); onLoginSubmit()">
+      <label for="username">
+        Nombre de usuario o DNI:
+        <input
+          id="username"
+          type="text"
+          class="field"
+          [(ngModel)]="usernameInput"
+          name="username"
+          placeholder="Ejemplo: admin, prof.carlos, estudiante.juan"
+          required
+        />
+      </label>
+
+      <button type="submit" class="btn primary submit-btn">
+        Ingresar al sistema
+      </button>
+    </form>
+
+    <div class="divider">
+      <span>O ingresa con un perfil de prueba</span>
+    </div>
+
+    <div class="quick-profiles">
+      @for (user of auth.users(); track user.id) {
+        <button
+          type="button"
+          class="profile-chip"
+          [class.active-current]="auth.currentUser()?.id === user.id"
+          [disabled]="!user.active"
+          (click)="selectProfile(user)"
+        >
+          <div class="chip-avatar">
+            @switch (user.role) {
+              @case ('ADMINISTRADOR') { ⚙️ }
+              @case ('DOCENTE') { 🧑‍🏫 }
+              @case ('ESTUDIANTE') { 🎓 }
+              @case ('PADRE_FAMILIA') { 👨‍👩‍👧 }
+            }
+          </div>
+          <div class="chip-info">
+            <b>{{ user.name }}</b>
+            <small>{{ roleLabels[user.role] }} (&#64;{{ user.username }})</small>
+          </div>
+          <span class="chip-arrow">→</span>
+        </button>
+      }
+    </div>
+
+    <div class="card-footer">
+      <p>«{{ institution.motto }}»</p>
+      <small>{{ institution.location }}</small>
+    </div>
+  </div>
+</div>
+
