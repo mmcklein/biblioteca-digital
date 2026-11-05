@@ -1,0 +1,91 @@
+<div class="overlay" (click)="onBackdrop($event)">
+  <div class="modal" role="dialog" aria-modal="true" [attr.aria-labelledby]="'video-' + resource().id">
+    <header class="modal-header">
+      <div class="title-wrap">
+        <span class="badge-format">▶ VIDEO MP4</span>
+        <h2 [id]="'video-' + resource().id">{{ resource().title }}</h2>
+      </div>
+      <button class="close-btn" type="button" (click)="closed.emit()" aria-label="Cerrar reproductor">✕</button>
+    </header>
+
+    <div class="player-container">
+      <div class="screen" [class.playing]="isPlaying()">
+        <div class="screen-backdrop" [style.background-color]="area()?.color ?? '#7a0c18'">
+          <span class="big-icon">{{ area()?.icon }}</span>
+        </div>
+        <div class="screen-overlay">
+          <button class="play-hero" type="button" (click)="togglePlay()" [attr.aria-label]="isPlaying() ? 'Pausar' : 'Reproducir'">
+            @if (isPlaying()) {
+              <span>❚❚</span>
+            } @else {
+              <span>▶</span>
+            }
+          </button>
+          <span class="screen-title">{{ resource().title }}</span>
+        </div>
+      </div>
+
+      <div class="player-bar">
+        <button class="ctrl-btn" type="button" (click)="togglePlay()">
+          {{ isPlaying() ? '❚❚ Pausar' : '▶ Reproducir' }}
+        </button>
+        <div class="progress-track">
+          <div class="progress-fill" [style.width]="isPlaying() ? '45%' : '0%'"></div>
+        </div>
+        <span class="duration-label">{{ isPlaying() ? '04:12' : '00:00' }} / {{ resource().duration ?? '10:00' }}</span>
+      </div>
+    </div>
+
+    <div class="details-section">
+      <div class="meta-row">
+        <span class="pill area-pill" [style.border-color]="area()?.color">
+          {{ area()?.icon }} {{ area()?.name }}
+        </span>
+        <span class="pill">{{ grade() }}</span>
+        <span class="pill">⏱ {{ resource().duration }}</span>
+        @if (isWatched()) {
+          <span class="pill status-pill">✓ Visto</span>
+        }
+      </div>
+
+      <p class="description">{{ resource().description }}</p>
+
+      @if (resource().topics && resource().topics!.length > 0) {
+        <div class="topics">
+          <h4>Temas abordados en este video:</h4>
+          <ul>
+            @for (topic of resource().topics; track topic) {
+              <li>✦ {{ topic }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="action-bar">
+        <button
+          class="btn"
+          [class.primary]="!isWatched()"
+          type="button"
+          (click)="toggleWatched()"
+        >
+          {{ isWatched() ? 'Desmarcar como visto' : '✓ Marcar como visto' }}
+        </button>
+
+        <button
+          class="btn"
+          type="button"
+          (click)="markDownloaded()"
+          [disabled]="downloadOffline()"
+        >
+          {{ downloadOffline() ? '✓ Disponible sin conexión (offline)' : '⬇ Guardar para ver sin internet' }}
+        </button>
+      </div>
+
+      <p class="offline-note">
+        Modo offline-first: Este video educativo está preparado para reproducción local en las computadoras de la
+        institución sin requerir conexión a internet activa.
+      </p>
+    </div>
+  </div>
+</div>
+

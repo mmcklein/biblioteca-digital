@@ -4,10 +4,10 @@
   "private": true,
   "description": "Aplicación de escritorio offline-first para contenido educativo",
   "scripts": {
-    "install:all": "echo 'Instalar dependencias de client y server'",
-    "dev": "echo 'Ejecutar cliente y servidor en desarrollo'",
-    "build": "echo 'Construir cliente y servidor'",
-    "test": "echo 'Ejecutar pruebas'"
+    "start": "npm run start --workspace=client/angular",
+    "dev": "npm run start --workspace=client/angular",
+    "build": "npm run build --workspace=client/angular",
+    "test": "npm run test --workspace=client/angular -- --watch=false"
   },
   "workspaces": [
     "client/angular",

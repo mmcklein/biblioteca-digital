@@ -1,0 +1,64 @@
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 22px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 15px;
+}
+
+.grid.big {
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+.tile {
+  padding: 18px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  color: inherit;
+  transition: 0.16s;
+}
+
+.tile:hover {
+  transform: translateY(-2px);
+  border-color: #d4b37e;
+}
+
+.glyph {
+  font-size: 34px;
+}
+
+.tile h3 {
+  margin: 8px 0 3px;
+  color: var(--wine);
+}
+
+.tile p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.section-h {
+  font-size: 17px;
+  color: var(--wine);
+  margin: 28px 0 15px;
+  font-weight: 850;
+}
+
+@media (max-width: 610px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tile {
+    padding: 12px;
+  }
+}

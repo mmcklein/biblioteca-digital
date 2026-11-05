@@ -1,0 +1,88 @@
+<div class="overlay" (click)="onBackdrop($event)">
+  <div class="modal" role="dialog" aria-modal="true" [attr.aria-labelledby]="'activity-' + resource().id">
+    <header class="modal-header">
+      <div class="title-wrap">
+        <span class="badge-type">📝 ACTIVIDAD PEDAGÓGICA</span>
+        <h2 [id]="'activity-' + resource().id">{{ resource().title }}</h2>
+      </div>
+      <button class="close-btn" type="button" (click)="closed.emit()" aria-label="Cerrar actividad">✕</button>
+    </header>
+
+    <div class="meta-row">
+      <span class="pill area-pill" [style.border-color]="area()?.color">
+        {{ area()?.icon }} {{ area()?.name }}
+      </span>
+      <span class="pill">{{ grade() }}</span>
+      <span class="pill diff-pill" [attr.data-diff]="resource().difficulty">
+        Nivel: {{ resource().difficulty ?? 'Intermedio' }}
+      </span>
+      <span class="pill">⏱ {{ resource().duration ?? '40 min' }}</span>
+      <span class="pill format-pill">Formato {{ resource().format }}</span>
+    </div>
+
+    <div class="section-box">
+      <h3>Propósito de la actividad</h3>
+      <p>{{ resource().description }}</p>
+    </div>
+
+    @if (resource().steps && resource().steps!.length > 0) {
+      <div class="section-box steps-box">
+        <h3>Pasos y orientaciones de trabajo:</h3>
+        <ul class="steps-list">
+          @for (step of resource().steps; track $index) {
+            <li class="step-item" [class.done]="isStepDone($index)">
+              <label class="step-label">
+                <input
+                  type="checkbox"
+                  [checked]="isStepDone($index)"
+                  (change)="toggleStep($index)"
+                />
+                <span class="step-num">Paso {{ $index + 1 }}:</span>
+                <span class="step-text">{{ step }}</span>
+              </label>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <div class="section-box notes-box">
+      <label for="student-notes">
+        <h3>Espacio de reflexión y notas del estudiante:</h3>
+      </label>
+      <textarea
+        id="student-notes"
+        class="notes-field"
+        rows="3"
+        [(ngModel)]="studentNote"
+        placeholder="Escribe aquí tus conclusiones, respuestas breves o dudas para consultar con el docente..."
+      ></textarea>
+    </div>
+
+    <div class="action-footer">
+      <button
+        class="btn"
+        [class.primary]="!completed()"
+        type="button"
+        (click)="toggleCompleted()"
+      >
+        {{ completed() ? '✓ Actividad completada' : 'Marcar como finalizada' }}
+      </button>
+
+      <button
+        class="btn"
+        type="button"
+        (click)="markDownloaded()"
+        [disabled]="downloaded()"
+      >
+        {{ downloaded() ? '✓ Ficha guardada en equipo' : '⬇ Descargar ficha para imprimir / resolver' }}
+      </button>
+    </div>
+
+    <p class="offline-note">
+      Esta ficha de actividad está disponible en la red local de la I.E. Micaela Bastidas para trabajar tanto de forma
+      individual como en equipos de aula.
+    </p>
+  </div>
+</div>
+

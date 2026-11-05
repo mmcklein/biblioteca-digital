@@ -1,0 +1,92 @@
+<div class="page-title">
+  <div class="emblem" aria-hidden="true">📑</div>
+  <div>
+    <h1>Libros y documentos</h1>
+    <p>Explora recursos educativos digitales para aprender y crecer.</p>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="panel filter-panel">
+    <h3>Filtrar por</h3>
+    <label>
+      Área curricular
+      <select class="field" [value]="current().area" (change)="setFilter('area', $any($event.target).value)">
+        <option value="">Todas</option>
+        @for (area of areas; track area.id) {
+          <option [value]="area.id">{{ area.name }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Grado
+      <select class="field" [value]="current().grade" (change)="setFilter('grade', $any($event.target).value)">
+        <option value="">Todos</option>
+        @for (grade of grades; track grade) {
+          <option [value]="grade">{{ gradeLabel(grade) }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Tipo
+      <select class="field" [value]="current().type" (change)="setFilter('type', $any($event.target).value)">
+        <option value="">Todos</option>
+        @for (type of types; track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Formato
+      <select class="field" [value]="current().format" (change)="setFilter('format', $any($event.target).value)">
+        <option value="">Todos</option>
+        @for (format of formats; track format) {
+          <option [value]="format">{{ format }}</option>
+        }
+      </select>
+    </label>
+    <button class="btn" type="button" (click)="clearFilters()">Limpiar filtros</button>
+  </aside>
+
+  <div>
+    <div class="toolbar">
+      <input
+        class="field search"
+        type="search"
+        [value]="queryDraft()"
+        (input)="queryDraft.set($any($event.target).value)"
+        (keydown.enter)="setFilter('q', queryDraft())"
+        placeholder="Buscar por título, autor o tema..."
+        aria-label="Buscar documentos"
+      />
+      <button class="btn primary" type="button" (click)="setFilter('q', queryDraft())">Buscar</button>
+      <span class="muted">{{ shown().length }} resultados</span>
+    </div>
+
+    @if (shown().length === 0) {
+      <div class="empty">No se encontraron materiales con esos filtros. Prueba con otras opciones.</div>
+    } @else {
+      <div class="grid big">
+        @for (resource of pageItems(); track resource.id) {
+          <app-resource-card [resource]="resource" (openDetail)="selected = $event" />
+        }
+      </div>
+      @if (pages() > 1) {
+        <div class="pagination">
+          <button class="btn tiny" type="button" (click)="previousPage()" [disabled]="currentPage() === 1">‹ Anterior</button>
+          <span>Página {{ currentPage() }} de {{ pages() }}</span>
+          <button class="btn tiny" type="button" (click)="nextPage()" [disabled]="currentPage() === pages()">Siguiente ›</button>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<p class="notice">
+  Los títulos son material de demostración para navegar el catálogo. Los documentos reales se incorporarán después
+  desde los archivos autorizados por la institución.
+</p>
+
+@if (selected) {
+  <app-resource-detail [resource]="selected" (closed)="selected = null" />
+}

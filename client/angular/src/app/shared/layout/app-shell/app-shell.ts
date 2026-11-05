@@ -15,10 +15,11 @@ export class AppShell {
   protected readonly nav = [
     { path: '/inicio', label: 'Inicio', icon: '🏠', ready: true },
     { path: '/acerca', label: 'Nuestra institución', icon: '🏫', ready: true },
-    { path: '/areas', label: 'Áreas académicas', icon: '📚', ready: false },
-    { path: '/libros', label: 'Biblioteca digital', icon: '📑', ready: false },
-    { path: '/videos', label: 'Videos educativos', icon: '▶️', ready: false },
-    { path: '/actividades', label: 'Actividades', icon: '📝', ready: false },
+    { path: '/areas', label: 'Áreas académicas', icon: '📚', ready: true },
+    { path: '/grados', label: 'Por grado', icon: '🎓', ready: true },
+    { path: '/libros', label: 'Biblioteca digital', icon: '📑', ready: true },
+    { path: '/videos', label: 'Videos educativos', icon: '▶️', ready: true },
+    { path: '/actividades', label: 'Actividades', icon: '📝', ready: true },
     { path: '/comunidad', label: 'Comunidad educativa', icon: '👥', ready: false },
     { path: '/galeria', label: 'Galería institucional', icon: '🖼️', ready: false },
   ];

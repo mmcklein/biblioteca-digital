@@ -117,6 +117,29 @@
   cursor: default;
 }
 
+.section-h {
+  font-size: 17px;
+  color: var(--wine);
+  margin: 28px 0 15px;
+  font-weight: 850;
+}
+
+.grid.big {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 15px;
+}
+
+.notice {
+  background: #fff0ca;
+  border: 1px solid #e3bb61;
+  padding: 10px 13px;
+  border-radius: 9px;
+  color: #61401a;
+  margin: 22px 0 0;
+  font-size: 12px;
+}
+
 @media (max-width: 700px) {
   .hero2::before {
     background-size: cover;

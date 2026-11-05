@@ -1,0 +1,17 @@
+<article class="resource">
+  <div class="cover" [style.--c]="area()?.color">
+    <span class="labeltag">{{ resource().format }}</span>
+    <span aria-hidden="true">{{ area()?.icon }}</span>
+  </div>
+  <div class="resbody">
+    <h3>{{ resource().title }}</h3>
+    <p>{{ resource().description }}</p>
+    <div>
+      <span class="pill">{{ area()?.name }}</span>
+      <span class="pill">{{ grade() }}</span>
+    </div>
+    <div class="resource-buttons">
+      <button class="btn tiny" type="button" (click)="openDetail.emit(resource())">Ver detalle</button>
+    </div>
+  </div>
+</article>

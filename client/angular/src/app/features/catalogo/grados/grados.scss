@@ -1,0 +1,44 @@
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 22px;
+}
+
+.panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 700;
+  color: #684451;
+  max-width: 320px;
+}
+
+.field {
+  border: 1px solid #decdbb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: white;
+}
+
+.section-h {
+  font-size: 17px;
+  color: var(--wine);
+  margin: 28px 0 15px;
+  font-weight: 850;
+}
+
+.grid.big {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 15px;
+}
+
+.empty {
+  padding: 52px 15px;
+  text-align: center;
+  color: var(--muted);
+  background: white;
+  border: 1px dashed #d7bda5;
+  border-radius: 12px;
+}
