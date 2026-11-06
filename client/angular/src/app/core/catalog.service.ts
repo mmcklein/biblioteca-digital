@@ -12,6 +12,7 @@ import {
   isVideo,
   type DifficultyLevel,
   type LibraryResource,
+  type ResourceFormat,
   type ResourceStatus,
 } from './resources';
 
@@ -214,6 +215,108 @@ export class CatalogService {
     const updated = this.resourcesState().filter((r) => r.id !== id);
     this.saveResources(updated);
     this.recordAudit('Eliminación de material', performedBy, `Eliminado "${target?.title ?? id}"`);
+  }
+
+  // --- Operaciones del Docente (Control Estricto de Propiedad) ---
+
+  teacherResources(username: string): LibraryResource[] {
+    return this.resourcesState().filter((r) => r.creatorUsername === username);
+  }
+
+  createTeacherResource(
+    data: Omit<LibraryResource, 'id'>,
+    teacher: { username: string; name: string },
+  ): LibraryResource {
+    const nextId = this.resourcesState().reduce((max, r) => Math.max(max, r.id), 0) + 1;
+    const now = new Date().toISOString().split('T')[0];
+
+    const newResource: LibraryResource = {
+      ...data,
+      id: nextId,
+      author: teacher.name,
+      createdBy: teacher.name,
+      creatorUsername: teacher.username,
+      status: data.status ?? 'publicado',
+      createdAt: data.createdAt ?? now,
+    };
+
+    const updated = [newResource, ...this.resourcesState()];
+    this.saveResources(updated);
+    this.recordAudit('Material docente subido', teacher.name, `Subido "${newResource.title}" (${newResource.type})`);
+    return newResource;
+  }
+
+  updateTeacherResource(
+    id: number,
+    changes: Partial<Omit<LibraryResource, 'id' | 'creatorUsername'>>,
+    teacher: { username: string; name: string },
+  ): void {
+    const target = this.byId(id);
+    if (!target) {
+      throw new Error('El material especificado no existe.');
+    }
+    if (target.creatorUsername !== teacher.username) {
+      throw new Error('Permiso denegado: Un docente no puede modificar materiales de otros docentes.');
+    }
+
+    const updated = this.resourcesState().map((item) => {
+      if (item.id === id) {
+        return { ...item, ...changes };
+      }
+      return item;
+    });
+    this.saveResources(updated);
+    this.recordAudit('Material docente modificado', teacher.name, `Actualizado "${target.title}"`);
+  }
+
+  setTeacherResourceStatus(
+    id: number,
+    status: ResourceStatus,
+    teacher: { username: string; name: string },
+  ): void {
+    this.updateTeacherResource(id, { status }, teacher);
+    this.recordAudit(
+      status === 'publicado' ? 'Material publicado' : 'Material retirado',
+      teacher.name,
+      `Docente ${status === 'publicado' ? 'publicó' : 'retiró'} material ID ${id}`,
+    );
+  }
+
+  deleteTeacherResource(id: number, teacher: { username: string; name: string }): void {
+    const target = this.byId(id);
+    if (!target) {
+      throw new Error('El material especificado no existe.');
+    }
+    if (target.creatorUsername !== teacher.username) {
+      throw new Error('Permiso denegado: Un docente no puede eliminar materiales de otros docentes.');
+    }
+
+    const updated = this.resourcesState().filter((r) => r.id !== id);
+    this.saveResources(updated);
+    this.recordAudit('Material docente eliminado', teacher.name, `Eliminado "${target.title}"`);
+  }
+
+  replaceTeacherFile(
+    id: number,
+    fileName: string,
+    format: ResourceFormat,
+    teacher: { username: string; name: string },
+  ): void {
+    this.updateTeacherResource(id, { fileName, format }, teacher);
+    this.recordAudit('Archivo reemplazado', teacher.name, `Reemplazado archivo de "${id}" por "${fileName}"`);
+  }
+
+  assignTeacherActivity(
+    id: number,
+    assignedGrades: number[],
+    teacher: { username: string; name: string },
+  ): void {
+    this.updateTeacherResource(id, { assignedGrades }, teacher);
+    this.recordAudit(
+      'Actividad asignada',
+      teacher.name,
+      `Actividad ID ${id} asignada a los grados: ${assignedGrades.join(', ')}`,
+    );
   }
 
   // Administración de Áreas Curriculares

@@ -30,6 +30,9 @@ export class AppShell {
 
   protected readonly nav = computed(() => {
     const list = [...this.baseNav];
+    if (this.auth.isDocente() || this.auth.isAdmin()) {
+      list.push({ path: '/docente', label: 'Panel Docente', icon: '🧑‍🏫', ready: true });
+    }
     if (this.auth.isAdmin()) {
       list.push({ path: '/admin', label: 'Administración', icon: '⚙️', ready: true });
     }
