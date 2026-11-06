@@ -1,0 +1,149 @@
+<div class="estudiante-page">
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-role">🎓 Espacio Escolar</div>
+      <h1>Bienvenido, {{ auth.currentUser()?.name }}</h1>
+      <p class="subtitle">
+        @if (userGrade(); as grade) {
+          <span>Estudiante de <strong>{{ grade }}.º grado de secundaria</strong></span>
+        } @else {
+          <span>Estudiante de secundaria</span>
+        }
+        — Biblioteca Digital I.E. Micaela Bastidas Puyucahua
+      </p>
+    </div>
+
+    <nav class="tab-nav" aria-label="Navegación del estudiante">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'catalogo'"
+        (click)="setTab('catalogo')"
+      >
+        📚 Mi Catálogo ({{ gradeCatalog().length }})
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'actividades'"
+        (click)="setTab('actividades')"
+      >
+        📝 Mis Actividades Asignadas ({{ assignedActivities().length }})
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'perfil'"
+        (click)="setTab('perfil')"
+      >
+        👤 Mi Perfil
+      </button>
+    </nav>
+  </header>
+
+  <!-- PESTAÑA 1: CATÁLOGO DE MATERIALES PARA MI GRADO -->
+  @if (activeTab() === 'catalogo') {
+    <section class="tab-content">
+      <div class="filter-bar">
+        <div class="search-box">
+          <input
+            type="search"
+            placeholder="Buscar libros, lecturas o videos por título o tema..."
+            [ngModel]="searchQ()"
+            (ngModelChange)="searchQ.set($event)"
+          />
+        </div>
+        <div class="select-box">
+          <select [ngModel]="filterArea()" (ngModelChange)="filterArea.set($event)">
+            <option value="">Todas las áreas curriculares</option>
+            @for (area of areas; track area.id) {
+              <option [value]="area.id">{{ area.icon }} {{ area.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="grade-notice">
+        <span>ℹ️ Mostrando materiales autorizados para <strong>{{ userGrade() ? (userGrade() + '.º de secundaria') : 'todos los grados' }}</strong></span>
+      </div>
+
+      @if (gradeCatalog().length > 0) {
+        <div class="resource-grid">
+          @for (res of gradeCatalog(); track res.id) {
+            <app-resource-card [resource]="res" (click)="openResource(res)" />
+          }
+        </div>
+      } @else {
+        <div class="empty-state panel">
+          <div class="empty-icon">📖</div>
+          <h3>No se encontraron materiales</h3>
+          <p>Prueba con otros términos de búsqueda o cambia el filtro de área académica.</p>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- PESTAÑA 2: ACTIVIDADES ASIGNADAS -->
+  @if (activeTab() === 'actividades') {
+    <section class="tab-content">
+      <div class="section-banner">
+        <h3>Actividades asignadas a tu grado</h3>
+        <p>Abre cada actividad pedagógica para ver sus instrucciones, pasos prácticos y registrar tus reflexiones.</p>
+      </div>
+
+      @if (assignedActivities().length > 0) {
+        <div class="activities-grid">
+          @for (act of assignedActivities(); track act.id) {
+            <article class="activity-card panel">
+              <div class="activity-header">
+                <span class="type-pill">📝 Actividad</span>
+                @if (act.difficulty) {
+                  <span class="difficulty-pill">{{ act.difficulty }}</span>
+                }
+              </div>
+              <h3 class="activity-title">{{ act.title }}</h3>
+              @if (act.description) {
+                <p class="activity-desc">{{ act.description }}</p>
+              }
+              <div class="activity-meta">
+                <span>Docente: <strong>{{ act.creatorUsername || 'Profesor de área' }}</strong></span>
+                @if (act.duration) {
+                  <span>⏱️ {{ act.duration }}</span>
+                }
+              </div>
+              <div class="activity-actions">
+                <button type="button" class="btn btn-primary" (click)="openActivity(act)">
+                  ✍️ Abrir y Resolver Actividad
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-state panel">
+          <div class="empty-icon">📝</div>
+          <h3>No tienes actividades asignadas actualmente</h3>
+          <p>Tus docentes publicarán actividades prácticas según el cronograma curricular.</p>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- PESTAÑA 3: PERFIL -->
+  @if (activeTab() === 'perfil') {
+    <section class="tab-content">
+      <app-perfil />
+    </section>
+  }
+
+  <!-- MODAL DE DETALLE DE RECURSO (LIBRO / VIDEO) -->
+  @if (selectedResource(); as res) {
+    <app-resource-detail [resource]="res" (closed)="closeResource()" />
+  }
+
+  <!-- MODAL DE RESOLUCIÓN DE ACTIVIDAD -->
+  @if (selectedActivity(); as act) {
+    <app-activity-detail [resource]="act" (closed)="closeActivity()" />
+  }
+</div>
+

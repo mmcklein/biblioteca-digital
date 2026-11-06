@@ -46,9 +46,12 @@ export class Login {
       void this.router.navigate(['/admin']);
     } else if (this.auth.isDocente()) {
       void this.router.navigate(['/docente']);
+    } else if (this.auth.isEstudiante()) {
+      void this.router.navigate(['/estudiante']);
+    } else if (this.auth.isPadre()) {
+      void this.router.navigate(['/padre']);
     } else {
       void this.router.navigate(['/inicio']);
     }
   }
 }
-
