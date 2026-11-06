@@ -36,6 +36,15 @@ export class AppShell {
     if (this.auth.isAdmin()) {
       list.push({ path: '/admin', label: 'Administración', icon: '⚙️', ready: true });
     }
+    if (this.auth.isEstudiante()) {
+      list.push({ path: '/estudiante', label: 'Mi Espacio Escolar', icon: '🎓', ready: true });
+    }
+    if (this.auth.isPadre()) {
+      list.push({ path: '/padre', label: 'Espacio Familiar', icon: '👨‍👩‍👧', ready: true });
+    }
+    if (this.auth.isAuthenticated()) {
+      list.push({ path: '/perfil', label: 'Mi Perfil', icon: '👤', ready: true });
+    }
     return list;
   });
 

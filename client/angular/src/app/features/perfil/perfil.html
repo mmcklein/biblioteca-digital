@@ -1,0 +1,95 @@
+<section class="perfil-container">
+  @if (auth.currentUser(); as user) {
+    <div class="panel profile-card">
+      <header class="profile-header">
+        <div class="avatar-badge">
+          {{ user.role === 'ESTUDIANTE' ? '🎓' : user.role === 'PADRE_FAMILIA' ? '👨‍👩‍👧' : user.role === 'DOCENTE' ? '🧑‍🏫' : '⚙️' }}
+        </div>
+        <div class="user-main-info">
+          <h2>{{ user.name }}</h2>
+          <div class="meta-tags">
+            <span class="role-pill">{{ roleLabels[user.role] }}</span>
+            <span class="username-pill">@{{ user.username }}</span>
+            @if (user.grade) {
+              <span class="grade-pill">{{ user.grade }}.º de Secundaria</span>
+            }
+          </div>
+        </div>
+        @if (!editMode) {
+          <button type="button" class="btn btn-outline" (click)="startEdit()">
+            ✏️ Editar datos
+          </button>
+        }
+      </header>
+
+      @if (successMsg) {
+        <div class="alert alert-success">{{ successMsg }}</div>
+      }
+      @if (errorMsg) {
+        <div class="alert alert-error">{{ errorMsg }}</div>
+      }
+
+      @if (!editMode) {
+        <div class="info-grid">
+          <div class="info-group">
+            <label>Correo Electrónico</label>
+            <p>{{ user.email || 'No registrado' }}</p>
+          </div>
+          <div class="info-group">
+            <label>Teléfono de Contacto</label>
+            <p>{{ user.phone || 'No registrado' }}</p>
+          </div>
+          <div class="info-group">
+            <label>Fecha de Registro</label>
+            <p>{{ user.createdAt }}</p>
+          </div>
+          <div class="info-group full-width">
+            <label>Temas o Áreas de Interés Lector</label>
+            @if (user.readingInterests && user.readingInterests.length > 0) {
+              <div class="tags-list">
+                @for (item of user.readingInterests; track item) {
+                  <span class="interest-tag">📖 {{ item }}</span>
+                }
+              </div>
+            } @else {
+              <p class="text-muted">No has especificado temas de interés todavía.</p>
+            }
+          </div>
+        </div>
+      } @else {
+        <form class="edit-form" (ngSubmit)="saveProfile()">
+          <div class="form-row">
+            <label for="name">Nombre Completo *</label>
+            <input id="name" type="text" [(ngModel)]="nameInput" name="name" required />
+          </div>
+
+          <div class="form-row">
+            <label for="email">Correo Electrónico</label>
+            <input id="email" type="email" [(ngModel)]="emailInput" name="email" placeholder="ejemplo@correo.com" />
+          </div>
+
+          <div class="form-row">
+            <label for="phone">Teléfono / Celular</label>
+            <input id="phone" type="tel" [(ngModel)]="phoneInput" name="phone" placeholder="987654321" />
+          </div>
+
+          <div class="form-row">
+            <label for="interests">Temas de Interés (separados por coma)</label>
+            <input id="interests" type="text" [(ngModel)]="interestsInput" name="interests" placeholder="Matemática, Historia, Poesía, Ciencia" />
+            <small class="helper-text">Ayuda a recomendarte lecturas y recursos afines.</small>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+            <button type="button" class="btn btn-secondary" (click)="cancelEdit()">Cancelar</button>
+          </div>
+        </form>
+      }
+    </div>
+  } @else {
+    <div class="panel empty-state">
+      <p>No has iniciado sesión.</p>
+    </div>
+  }
+</section>
+

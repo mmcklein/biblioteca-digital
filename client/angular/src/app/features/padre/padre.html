@@ -1,0 +1,110 @@
+<div class="padre-page">
+  <header class="page-header">
+    <div class="header-content">
+      <div class="badge-role">👨‍👩‍👧 Espacio Familiar</div>
+      <h1>Portal de Acompañamiento Familiar</h1>
+      <p class="subtitle">
+        I.E. Secundaria Micaela Bastidas Puyucahua — Acceso a lecturas, textos y recursos de orientación
+      </p>
+    </div>
+
+    <nav class="tab-nav" aria-label="Navegación familiar">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'catalogo'"
+        (click)="setTab('catalogo')"
+      >
+        📚 Catálogo Familiar ({{ familyCatalog().length }})
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'perfil'"
+        (click)="setTab('perfil')"
+      >
+        👤 Mi Perfil
+      </button>
+    </nav>
+  </header>
+
+  <!-- PESTAÑA 1: CATÁLOGO FAMILIAR -->
+  @if (activeTab() === 'catalogo') {
+    <section class="tab-content">
+      <div class="info-card panel">
+        <h3>📖 Acompañamiento en el aprendizaje</h3>
+        <p>
+          Explore los textos escolares, libros de consulta y videos formativos disponibles en la biblioteca institucional.
+          Todos los materiales pueden ser consultados localmente o descargados sin consumir internet.
+        </p>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-box">
+          <input
+            type="search"
+            placeholder="Buscar por título, autor o tema..."
+            [ngModel]="searchQ()"
+            (ngModelChange)="searchQ.set($event)"
+          />
+        </div>
+        <div class="select-box">
+          <select [ngModel]="filterArea()" (ngModelChange)="filterArea.set($event)">
+            <option value="">Todas las áreas</option>
+            @for (area of areas; track area.id) {
+              <option [value]="area.id">{{ area.icon }} {{ area.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="select-box">
+          <select [ngModel]="filterGrade()" (ngModelChange)="filterGrade.set($event)">
+            <option value="">Todos los grados</option>
+            @for (g of GRADES; track g) {
+              <option [value]="g">{{ g }}.º de Secundaria</option>
+            }
+          </select>
+        </div>
+        <div class="select-box">
+          <select [ngModel]="filterType()" (ngModelChange)="filterType.set($event)">
+            <option value="">Todos los formatos</option>
+            <option value="Libro">Libro / Texto</option>
+            <option value="Guía">Guía de estudio</option>
+            <option value="Video">Video educativo</option>
+          </select>
+        </div>
+      </div>
+
+      @if (familyCatalog().length > 0) {
+        <div class="resource-grid">
+          @for (res of familyCatalog(); track res.id) {
+            <app-resource-card [resource]="res" (click)="openResource(res)" />
+          }
+        </div>
+      } @else {
+        <div class="empty-state panel">
+          <div class="empty-icon">🔍</div>
+          <h3>No se encontraron materiales</h3>
+          <p>Pruebe con otros filtros o términos de búsqueda.</p>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- PESTAÑA 2: PERFIL -->
+  @if (activeTab() === 'perfil') {
+    <section class="tab-content">
+      <app-perfil />
+    </section>
+  }
+
+  <!-- MODAL DE DETALLE / DESCARGA DE RECURSO -->
+  @if (selectedResource(); as res) {
+    <app-resource-detail [resource]="res" (closed)="closeResource()" />
+  }
+
+  <!-- MODAL DE REPRODUCTOR DE VIDEO -->
+  @if (selectedVideo(); as vid) {
+    <app-video-player [resource]="vid" (closed)="closeVideo()" />
+  }
+</div>
+

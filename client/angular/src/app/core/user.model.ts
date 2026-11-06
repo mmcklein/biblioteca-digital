@@ -7,6 +7,8 @@ export interface User {
   role: UserRole;
   active: boolean;
   email?: string;
+  phone?: string;
+  readingInterests?: string[];
   areaId?: number; // Para docentes asignados a un área curricular
   grade?: number;  // Para estudiantes
   createdAt: string;
@@ -52,7 +54,7 @@ export const INITIAL_USERS: User[] = [
   {
     id: 4,
     username: 'estudiante.juan',
-    name: 'Juan Huamán Bastidas',
+    name: 'Pepe Huamán Bastidas',
     role: 'ESTUDIANTE',
     active: true,
     grade: 3,
