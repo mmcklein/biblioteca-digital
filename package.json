@@ -7,11 +7,16 @@
     "start": "npm run start --workspace=client/angular",
     "dev": "npm run start --workspace=client/angular",
     "build": "npm run build --workspace=client/angular",
-    "test": "npm run test --workspace=client/angular -- --watch=false"
+    "test": "npm run test --workspace=client/angular -- --watch=false",
+    "desktop": "electron ./client/electron",
+    "desktop:dev": "ELECTRON_IS_DEV=1 electron ./client/electron"
   },
   "workspaces": [
     "client/angular",
     "client/electron",
     "server"
-  ]
+  ],
+  "devDependencies": {
+    "electron": "^24.22.2"
+  }
 }

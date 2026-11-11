@@ -1,0 +1,19 @@
+{
+  "name": "biblioteca-electron",
+  "version": "1.0.0",
+  "description": "Aplicación de escritorio Electron para la Biblioteca Digital de la I.E. Secundaria Micaela Bastidas Puyucahua",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "ELECTRON_IS_DEV=1 electron ."
+  },
+  "keywords": [
+    "electron",
+    "angular",
+    "offline-first",
+    "biblioteca-digital"
+  ],
+  "author": "I.E. Secundaria Micaela Bastidas Puyucahua",
+  "license": "ISC"
+}
+

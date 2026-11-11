@@ -35,3 +35,35 @@ node init-db.js
 6. Crea las carpetas físicas de almacenamiento en `storage/` (`libros/`, `guias/`, `videos/`, `actividades/`, `portadas/`, `respaldos/`).
 7. Ejecuta `PRAGMA integrity_check` y pruebas automatizadas de validación de áreas, roles, catálogo y rechazo de claves foráneas inválidas.
 
+
+
+esta es la base de datos esta en 2 con su js, es la proimera version de la base de datos
+macklein@pop-os:~/Descargas$
+macklein@pop-os:~/Descargas$ cd 'Antigravity IDE'
+ls -la
+total 245484
+drwxr-xr-x 5 macklein macklein      4096 oct 26 13:22 .
+drwxr-xr-x 5 macklein macklein      4096 nov  6 15:29 ..
+-rwxr-xr-x 1 macklein macklein 199855320 oct 26 13:22 antigravity-ide
+drwxr-xr-x 2 macklein macklein      4096 oct 26 13:22 bin
+-rw-r--r-- 1 macklein macklein    115176 oct 26 13:22 chrome_100_percent.pak
+-rw-r--r-- 1 macklein macklein    188186 oct 26 13:22 chrome_200_percent.pak
+-rwxr-xr-x 1 macklein macklein   1545800 oct 26 13:22 chrome_crashpad_handler
+-rwxr-xr-x 1 macklein macklein     15328 oct 26 13:22 chrome-sandbox
+-rw-r--r-- 1 macklein macklein  10467680 oct 26 13:22 icudtl.dat
+-rwxr-xr-x 1 macklein macklein    251224 oct 26 13:22 libEGL.so
+-rwxr-xr-x 1 macklein macklein   2681808 oct 26 13:22 libffmpeg.so
+-rwxr-xr-x 1 macklein macklein   6343984 oct 26 13:22 libGLESv2.so
+-rwxr-xr-x 1 macklein macklein   4703008 oct 26 13:22 libvk_swiftshader.so
+-rwxr-xr-x 1 macklein macklein   2379040 oct 26 13:22 libvulkan.so.1
+-rw-r--r-- 1 macklein macklein  15102119 oct 26 13:22 LICENSES.chromium.html
+drwxr-xr-x 2 macklein macklein      4096 oct 26 13:22 locales
+drwxr-xr-x 4 macklein macklein      4096 oct 26 13:22 resources
+-rw-r--r-- 1 macklein macklein   6490319 oct 26 13:22 resources.pak
+-rw-r--r-- 1 macklein macklein    403834 oct 26 13:22 snapshot_blob.bin
+-rw-r--r-- 1 macklein macklein    776865 oct 26 13:22 v8_context_snapshot.bin
+-rw-r--r-- 1 macklein macklein       107 oct 26 13:22 vk_swiftshader_icd.json
+macklein@pop-os:~/Descargas/Antigravity IDE$ chmod +x *
+./antigravity
+bash: ./antigravity: No existe el archivo o el directorio
+macklein@pop-os:~/Descargas/Antigravity IDE$

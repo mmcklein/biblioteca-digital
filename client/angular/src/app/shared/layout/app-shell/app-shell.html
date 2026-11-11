@@ -70,6 +70,9 @@
       <div class="topbar-actions">
         <span class="conn-pill" title="La biblioteca opera localmente sin conexión a internet">
           🟢 Modo local activo (Offline)
+          @if (electron.isElectron) {
+            <small style="opacity: 0.85; margin-left: 4px;">• Escritorio</small>
+          }
         </span>
 
         @if (auth.currentUser(); as user) {

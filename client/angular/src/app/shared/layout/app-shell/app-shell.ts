@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ElectronService } from '../../../core/electron/electron.service';
 import { INSTITUTION } from '../../../core/institution';
 import { ROLE_LABELS } from '../../../core/user.model';
 
@@ -12,6 +13,7 @@ import { ROLE_LABELS } from '../../../core/user.model';
 })
 export class AppShell {
   protected readonly auth = inject(AuthService);
+  protected readonly electron = inject(ElectronService);
   protected readonly institution = INSTITUTION;
   protected readonly roleLabels = ROLE_LABELS;
   protected sidebarOpen = false;
