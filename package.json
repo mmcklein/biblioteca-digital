@@ -1,15 +1,18 @@
 {
   "name": "biblioteca-digital",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Aplicación de escritorio offline-first para contenido educativo",
+  "main": "client/electron/main.js",
+  "author": "I.E. Secundaria Micaela Bastidas Puyucahua",
   "scripts": {
     "start": "npm run start --workspace=client/angular",
     "dev": "npm run start --workspace=client/angular",
     "build": "npm run build --workspace=client/angular",
     "test": "npm run test --workspace=client/angular -- --watch=false",
-    "desktop": "electron ./client/electron",
-    "desktop:dev": "ELECTRON_IS_DEV=1 electron ./client/electron"
+    "desktop": "electron .",
+    "desktop:dev": "ELECTRON_IS_DEV=1 electron .",
+    "dist:win": "npm run build && electron-builder --win"
   },
   "workspaces": [
     "client/angular",
@@ -17,6 +20,56 @@
     "server"
   ],
   "devDependencies": {
-    "electron": "^24.22.2"
+    "electron": "^24.2.0"
+  },
+  "build": {
+    "appId": "pe.edu.bastidas.bibliotecadigital",
+    "productName": "Biblioteca Digital - Micaela Bastidas",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "client/electron/**/*",
+      "client/angular/dist/angular/browser/**/*",
+      "database/local-sqlite/biblioteca.db",
+      "database/local-sqlite/schema.sql",
+      "database/local-sqlite/seeds.sql",
+      "storage/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "database/local-sqlite/biblioteca.db",
+        "to": "database/biblioteca.db"
+      },
+      {
+        "from": "storage",
+        "to": "storage"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Biblioteca Digital",
+      "uninstallDisplayName": "Biblioteca Digital - Micaela Bastidas"
+    }
   }
 }
