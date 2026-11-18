@@ -43,3 +43,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+dist-electron/
+database/local-sqlite/*.db-shm
+database/local-sqlite/*.db-wal
