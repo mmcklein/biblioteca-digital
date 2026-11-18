@@ -13,8 +13,17 @@ const express = require('express');
 const dbService = require('./services/db.service');
 
 const isDev = process.env.ELECTRON_IS_DEV === '1' || process.argv.includes('--dev');
-const STORAGE_ROOT = path.resolve(__dirname, '../../storage');
-const ANGULAR_DIST_BROWSER = path.resolve(__dirname, '../angular/dist/angular/browser');
+
+// Rutas compatibles tanto en desarrollo como empaquetado (.exe)
+const ROOT_DIR = app.isPackaged
+  ? path.join(process.resourcesPath, 'app')
+  : path.resolve(__dirname, '../../');
+
+const STORAGE_ROOT = dbService.storagePath;
+
+const ANGULAR_DIST_BROWSER = app.isPackaged
+  ? path.join(ROOT_DIR, 'client/angular/dist/angular/browser')
+  : path.resolve(__dirname, '../angular/dist/angular/browser');
 
 let mainWindow = null;
 let localServer = null;
@@ -29,10 +38,14 @@ function startLocalServer() {
     const serverApp = express();
 
     // Servir archivos estáticos generados por el build de Angular
-    serverApp.use(express.static(ANGULAR_DIST_BROWSER));
+    if (fs.existsSync(ANGULAR_DIST_BROWSER)) {
+      serverApp.use(express.static(ANGULAR_DIST_BROWSER));
+    }
 
     // Servir archivos multimedia locales desde storage/
-    serverApp.use('/storage', express.static(STORAGE_ROOT));
+    if (fs.existsSync(STORAGE_ROOT)) {
+      serverApp.use('/storage', express.static(STORAGE_ROOT));
+    }
 
     // Fallback para todas las rutas Angular (SPA Routing: /inicio, /admin, /estudiante, etc.)
     serverApp.use((req, res) => {
@@ -50,7 +63,6 @@ function startLocalServer() {
     });
 
     const server = http.createServer(serverApp);
-    // Escuchar en puerto aleatorio disponible en localhost
     server.listen(0, '127.0.0.1', () => {
       const addr = server.address();
       localServerPort = addr.port;
@@ -77,7 +89,7 @@ function createMainWindow() {
       nodeIntegration: false,
       sandbox: false,
     },
-    show: false, // Se muestra al estar listo para evitar parpadeo blanco
+    show: false,
   });
 
   setupAppMenu();
@@ -87,7 +99,6 @@ function createMainWindow() {
     console.log('[Electron] Ventana principal lista y desplegada.');
   });
 
-  // Abrir enlaces externos en el navegador del sistema, no dentro de Electron
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       void shell.openExternal(url);
@@ -113,7 +124,7 @@ function loadApplication() {
 
 function loadProductionUrl() {
   const prodUrl = `http://127.0.0.1:${localServerPort}`;
-  console.log(`[Electron] Modo Producción: Cargando ${prodUrl}`);
+  console.log(`[Electron] Cargando ${prodUrl}`);
   mainWindow.loadURL(prodUrl);
 }
 
@@ -181,20 +192,29 @@ function setupAppMenu() {
   Menu.setApplicationMenu(menu);
 }
 
-/**
- * Handlers IPC para comunicación segura entre Angular y Electron
- */
 function registerIpcHandlers() {
-  // App Info
   ipcMain.handle('app:getVersion', () => app.getVersion());
   ipcMain.handle('app:getStoragePath', () => STORAGE_ROOT);
 
-  // Database Handlers
+  // Módulo A: Usuarios y Autenticación
+  ipcMain.handle('auth:login', (_event, username, password) => dbService.login(username, password));
+  ipcMain.handle('users:getAll', () => dbService.getUsers());
+  ipcMain.handle('users:getByUsername', (_event, username) => dbService.getUserByUsername(username));
+  ipcMain.handle('users:create', (_event, data) => dbService.createUser(data));
+  ipcMain.handle('users:setActive', (_event, userId, active) => dbService.setUserActive(userId, active));
+  ipcMain.handle('users:update', (_event, id, data) => dbService.updateUser(id, data));
+
+  // Módulo B: Áreas y Recursos
   ipcMain.handle('db:getAreas', () => dbService.getAreas());
   ipcMain.handle('db:getResources', (_event, filters) => dbService.getResources(filters));
   ipcMain.handle('db:getResourceById', (_event, id) => dbService.getResourceById(id));
-  ipcMain.handle('db:getUsers', () => dbService.getUsers());
-  ipcMain.handle('db:getUserByUsername', (_event, username) => dbService.getUserByUsername(username));
+  ipcMain.handle('db:saveResource', (_event, data, userId) => dbService.saveResource(data, userId));
+
+  // Módulo C: Respaldos
+  ipcMain.handle('db:createBackup', () => dbService.createBackup());
+  ipcMain.handle('db:listBackups', () => dbService.listBackups());
+
+  // Actividades y Auditoría
   ipcMain.handle('db:getStudentActivityNote', (_event, resourceId, userId) =>
     dbService.getStudentActivityNote(resourceId, userId)
   );
@@ -202,11 +222,8 @@ function registerIpcHandlers() {
     dbService.saveStudentActivityNote(data)
   );
   ipcMain.handle('db:getAuditLogs', (_event, limit) => dbService.getAuditLogs(limit));
-  ipcMain.handle('db:recordAudit', (_event, action, userId, details) =>
-    dbService.recordAudit(action, userId, details)
-  );
 
-  // File Handlers
+  // Archivos
   ipcMain.handle('files:checkFileExists', (_event, relativePath) => {
     const fullPath = path.join(STORAGE_ROOT, relativePath);
     return fs.existsSync(fullPath);
@@ -225,7 +242,6 @@ function registerIpcHandlers() {
   });
 }
 
-// Inicialización de la aplicación
 app.whenReady().then(async () => {
   try {
     localServer = await startLocalServer();
@@ -251,4 +267,3 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-
